@@ -1,5 +1,8 @@
 
-// create the canvas
+/**
+ * canvas
+ * context
+ */
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
 canvas.width = 800;
@@ -92,12 +95,10 @@ var update = function (modifier) {
   // residual spin affects the ball velocity
   if (ball.spin > 0) {
     ball.velocityX += 0.5;
-    // ball.velocityY -= 0.5;
     ball.speed = 500;
     ball.spin -= 0.3;
   } else if (ball.spin < 0) {
     ball.velocityX -= 0.5;
-    // ball.velocityY += 0.5;
     ball.speed = 500;
     ball.spin += 0.3;
   };
@@ -111,7 +112,7 @@ var update = function (modifier) {
   if (ball.velocityX > 0 && ball.velocityX >= ball.velocityMax) {
     ball.velocityX = ball.velocityMax;
   } else if ((ball.velocityX + ball.velocityX) >= ball.velocityMax) {
-    ball.velocityX = ball.velocityMax;
+    ball.velocityX = -ball.velocityMax;
   };
 
   // if ball strikes the vertical walls, invert the 
@@ -120,6 +121,11 @@ var update = function (modifier) {
     ball.velocityX = -ball.velocityX;
   } else if (ball.x -ball.radius <= 0) {
     ball.velocityX = -ball.velocityX;
+  };
+
+  // hit wall means no spin
+  if (doesBallHitBounds) {
+    ball.spin = 0;
   };
 
   // if ball strikes the horizontal walls, invert the 
@@ -151,7 +157,7 @@ var update = function (modifier) {
     ) {
     ball.velocityY = -ball.velocityY;
     ball.y -= blicka.height;
-    // ball.spin = mouse.speedX;
+    ball.spin = mouse.speedX;
     mouse.speedX = 0;
   };
 
@@ -230,6 +236,13 @@ var main = function () {
 
   // Request to do this again ASAP
   requestAnimationFrame(main);
+};
+
+var doesBallHitBounds = function() {
+  return (ball.x + ball.width >= canvas.width)
+    || (ball.x -ball.radius <= 0)
+    || (ball.y + ball.width >= canvas.height)
+    || (ball.y <= 0);
 };
 
 // let's play this game!
