@@ -17,13 +17,13 @@ bgImage.onload = function () {
 };
 bgImage.src = "asset/bg.png";
 
-// assets - blicka
-var blickaReady = false;
-var blickaImage = new Image();
-blickaImage.onload = function () {
-  blickaReady = true;
+// assets - paddle
+var paddleReady = false;
+var paddleImage = new Image();
+paddleImage.onload = function () {
+  paddleReady = true;
 };
-blickaImage.src = "asset/blicka.png";
+paddleImage.src = "asset/blicka.png";
 
 // assets - ball
 var ballReady = false;
@@ -40,12 +40,13 @@ var mouse = {
   speedX: 0,
   prevX: 0
 };
-var blicka = {
+var paddle = {
   width: 150,
   height: 25,
   x: 0,
   y: 0
 };
+
 var block = {
   width: 150,
   height: 150,
@@ -64,8 +65,23 @@ var ball = {
   width: 25,
   height: 25,
   radius: 5,
-  spin: 0
-}
+  spin: 0,
+  getTop: function() {
+    return this.y;
+  },
+  getRight: function() {
+    return this.x + this.width;
+  },
+  getBottom: function() {
+    return this.y + this.height;
+  },
+  getLeft: function() {
+    return this.x;
+  },
+  hit: function(x, y) {
+    return x >= this.getLeft() && x <= this.getRight() && y >= this.getTop() && y <= this.getBottom();
+  }
+};
 
 // handle keyboard controls
 var keysDown = {};
@@ -92,22 +108,6 @@ var update = function (modifier) {
   ball.x += ball.velocityX;
   ball.y += ball.velocityY;
 
-  // residual spin affects the ball velocity
-  if (ball.spin > 0) {
-    ball.velocityX += 0.5;
-    ball.speed = 500;
-    ball.spin -= 0.3;
-  } else if (ball.spin < 0) {
-    ball.velocityX -= 0.5;
-    ball.speed = 500;
-    ball.spin += 0.3;
-  };
-
-  // no spin means normal ball
-  if (ball.spin == 0) {
-    ball.speed = 250;
-  };
-
   // ball velocity limit
   if (ball.velocityX > 0 && ball.velocityX >= ball.velocityMax) {
     ball.velocityX = ball.velocityMax;
@@ -121,11 +121,6 @@ var update = function (modifier) {
     ball.velocityX = -ball.velocityX;
   } else if (ball.x -ball.radius <= 0) {
     ball.velocityX = -ball.velocityX;
-  };
-
-  // hit wall means no spin
-  if (doesBallHitBounds) {
-    ball.spin = 0;
   };
 
   // if ball strikes the horizontal walls, invert the 
@@ -147,57 +142,35 @@ var update = function (modifier) {
     ball.y = canvas.height - ball.height;
   };
 
-  // collision ball with blicka
+  // collision ball with paddle
   // top
-  if (
-    (ball.y + ball.height) >= blicka.y
-    && ball.y <= (blicka.y + blicka.height)
-    && ball.x >= blicka.x
-    && ball.x <= (blicka.x + blicka.width)
+  if (ball.hit(paddle.x, paddle.y)
+    (ball.y + ball.height) >= paddle.y
+    && ball.y <= (paddle.y + paddle.height)
+    && ball.x >= paddle.x
+    && ball.x <= (paddle.x + paddle.width)
     ) {
+
+    // ball go up
     ball.velocityY = -ball.velocityY;
-    ball.y -= blicka.height;
+
+    // ball always above paddle
+    ball.y -= paddle.height;
+
+    // load ball with spin
     ball.spin = mouse.speedX;
-    mouse.speedX = 0;
   };
-
-  // collision ball with block
-  if (
-    (ball.y + ball.height) >= blicka.y
-    && ball.y <= (blicka.y + blicka.height)
-    && ball.x >= blicka.x
-    && ball.x <= (blicka.x + blicka.width)
-    ) {
-    ball.velocityY = -ball.velocityY;
-    ball.y -= blicka.height;
-    // ball.spin = mouse.speedX;
-    mouse.speedX = 0;
-  };
-
-  // keyboard movement
-  if (38 in keysDown || 87 in keysDown) { // Player holding up
-    blicka.y -= blicka.speed * modifier;
-  }
-  if (40 in keysDown || 83 in keysDown) { // Player holding down
-    blicka.y += blicka.speed * modifier;
-  }
-  if (37 in keysDown || 65 in keysDown) { // Player holding left
-    blicka.x -= blicka.speed * modifier;
-  }
-  if (39 in keysDown || 68 in keysDown) { // Player holding right
-    blicka.x += blicka.speed * modifier;
-  }
 
   // mouse movement
   if (mouse.x && mouse.y) {
-    blicka.x = mouse.x;
-    blicka.y = mouse.y;
+    paddle.x = mouse.x;
+    paddle.y = mouse.y;
   };
 
   // mouse speed
   mouse.speedX = mouse.prevX - mouse.x;
   mouse.prevX = mouse.x;
-  
+
   // block
   block.x = 20;
   block.y = 20;
@@ -213,9 +186,9 @@ var render = function () {
   ctx.fillStyle = '#eee';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // blicka
+  // paddle
   ctx.fillStyle = '#000';
-  ctx.fillRect(blicka.x, blicka.y, blicka.width, blicka.height);
+  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
 
   // ball
   ctx.fillRect(ball.x, ball.y, ball.width, ball.height);
