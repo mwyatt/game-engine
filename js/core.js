@@ -1,8 +1,84 @@
 
-/**
- * canvas
- * context
- */
+
+// base object for things with
+// width
+// height
+// x
+// y
+var Thing = function() {
+  this.width;
+  this.height;
+}
+
+Thing.prototype.getTop = function() {
+  return this.y;
+}
+
+Thing.prototype.getRight = function() {
+  return this.x + this.width;
+}
+
+Thing.prototype.getBottom = function() {
+  return this.y + this.height;
+}
+
+Thing.prototype.getLeft = function() {
+  return this.x;
+}
+
+// top 1
+// right 2
+// bottom 3
+// left 4
+// is this too much to test for each thing on each loop?
+// may need detection to check when items are in certain areas
+Thing.prototype.isHit = function(object) {
+
+  // top
+  if (object.getBottom() >= this.getTop() && object.getRight() >= this.getLeft() && object.getLeft() <= this.getRight() && object.getBottom() < this.getBottom()) {
+    return 1;
+
+  // right
+  } else if (this.getTop() >= object.getBottom() && this.getRight() >= object.getLeft() && this.getBottom() >= object.getTop() && this.getLeft() < object.getLeft()) {
+
+  }
+
+
+  return object.x >= this.getLeft() && object.x <= this.getRight() && object.y >= this.getTop() && object.y <= this.getBottom();
+}
+
+Thing.prototype.isHitTop = function(thing) {
+  thing.getBottom() >= this.y
+      && thing.y <= (this.y + this.height)
+      && thing.x >= this.x
+      && thing.x <= (this.x + this.width)
+}
+
+
+
+
+
+var Ball = function(){
+  Thing.apply(this, arguments);
+}
+Ball.prototype = Thing.prototype;
+
+Ball.prototype.fooBar = function(hi) {
+  console.log(hi);
+}
+
+var thing = new Thing;
+var ball = new Ball;
+
+console.log(thing, thing.isHit(10, 20));
+console.log(ball, ball.isHit(10, 20), ball.fooBar('ok'));
+
+
+
+
+
+
+// setup canvas
 var canvas = document.createElement("canvas");
 var ctx = canvas.getContext("2d");
 canvas.width = 800;
@@ -40,28 +116,16 @@ var mouse = {
   speedX: 0,
   prevX: 0
 };
-var paddle = {
-  width: 150,
-  height: 25,
-  x: 0,
-  y: 0
-};
 
-var block = {
-  width: 150,
-  height: 150,
-  x: 0,
-  y: 0
-};
 var ball = {
   direction: 120,
   speed: 250,
   x: 50,
   y: 50,
-  velocityX: 5,
-  velocityY: 5,
-  velocityMax: 7,
-  velocityDefault: 5,
+  vX: 5,
+  vY: 5,
+  vMax: 7,
+  vDefault: 5,
   width: 25,
   height: 25,
   radius: 5,
@@ -82,6 +146,25 @@ var ball = {
     return x >= this.getLeft() && x <= this.getRight() && y >= this.getTop() && y <= this.getBottom();
   }
 };
+
+var paddle = {
+  width: 150,
+  height: 25,
+  x: 0,
+  y: 0
+};
+
+var block = {
+  width: 150,
+  height: 150,
+  x: 0,
+  y: 0
+};
+
+
+
+
+
 
 // handle keyboard controls
 var keysDown = {};
@@ -105,30 +188,30 @@ canvas.addEventListener('mousemove', function(e) {
 var update = function (modifier) {
 
   // ball moves its velocity
-  ball.x += ball.velocityX;
-  ball.y += ball.velocityY;
+  ball.x += ball.vX;
+  ball.y += ball.vY;
 
   // ball velocity limit
-  if (ball.velocityX > 0 && ball.velocityX >= ball.velocityMax) {
-    ball.velocityX = ball.velocityMax;
-  } else if ((ball.velocityX + ball.velocityX) >= ball.velocityMax) {
-    ball.velocityX = -ball.velocityMax;
+  if (ball.vX > 0 && ball.vX >= ball.vMax) {
+    ball.vX = ball.vMax;
+  } else if ((ball.vX + ball.vX) >= ball.vMax) {
+    ball.vX = -ball.vMax;
   };
 
   // if ball strikes the vertical walls, invert the 
   // x-velocity vector of ball
   if (ball.x + ball.width >= canvas.width) {
-    ball.velocityX = -ball.velocityX;
+    ball.vX = -ball.vX;
   } else if (ball.x -ball.radius <= 0) {
-    ball.velocityX = -ball.velocityX;
+    ball.vX = -ball.vX;
   };
 
   // if ball strikes the horizontal walls, invert the 
   // x-velocity vector of ball
   if (ball.y + ball.width >= canvas.height) {
-    ball.velocityY = -ball.velocityY;
+    ball.vY = -ball.vY;
   } else if (ball.y <= 0) {
-    ball.velocityY = -ball.velocityY;
+    ball.vY = -ball.vY;
   };
 
   // ball leaves canvas
@@ -144,15 +227,14 @@ var update = function (modifier) {
 
   // collision ball with paddle
   // top
-  if (ball.hit(paddle.x, paddle.y)
-    (ball.y + ball.height) >= paddle.y
+  if ((ball.y + ball.height) >= paddle.y
     && ball.y <= (paddle.y + paddle.height)
     && ball.x >= paddle.x
     && ball.x <= (paddle.x + paddle.width)
     ) {
 
     // ball go up
-    ball.velocityY = -ball.velocityY;
+    ball.vY = -ball.vY;
 
     // ball always above paddle
     ball.y -= paddle.height;
