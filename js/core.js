@@ -5,24 +5,26 @@
 // height
 // x
 // y
-var Thing = function() {
+var Hitbox = function() {
   this.width;
   this.height;
+  this.x;
+  this.y;
 }
 
-Thing.prototype.getTop = function() {
+Hitbox.prototype.getTop = function() {
   return this.y;
 }
 
-Thing.prototype.getRight = function() {
+Hitbox.prototype.getRight = function() {
   return this.x + this.width;
 }
 
-Thing.prototype.getBottom = function() {
+Hitbox.prototype.getBottom = function() {
   return this.y + this.height;
 }
 
-Thing.prototype.getLeft = function() {
+Hitbox.prototype.getLeft = function() {
   return this.x;
 }
 
@@ -31,8 +33,9 @@ Thing.prototype.getLeft = function() {
 // bottom 3
 // left 4
 // is this too much to test for each thing on each loop?
+// must ensure that only hitboxes are tested that are likely to be hit
 // may need detection to check when items are in certain areas
-Thing.prototype.isHit = function(object) {
+Hitbox.prototype.isHit = function(object) {
 
   // top
   if (object.getBottom() >= this.getTop() && object.getRight() >= this.getLeft() && object.getLeft() <= this.getRight() && object.getBottom() < this.getBottom()) {
@@ -40,34 +43,58 @@ Thing.prototype.isHit = function(object) {
 
   // right
   } else if (this.getTop() >= object.getBottom() && this.getRight() >= object.getLeft() && this.getBottom() >= object.getTop() && this.getLeft() < object.getLeft()) {
+    return 2;
 
+  // bottom
+  } else if (this.getTop() < object.getTop() && this.getRight() >= object.getLeft() && this.getBottom() <= object.getTop() && this.getLeft() >= object.getLeft()) {
+    return 3;
+
+  // left
+  } else if (this.getTop() <= object.getBottom() && this.getRight() > object.getRight() && this.getBottom() >= object.getTop() && this.getLeft() >= object.getRight()) {
+    return 4;
   }
-
-
-  return object.x >= this.getLeft() && object.x <= this.getRight() && object.y >= this.getTop() && object.y <= this.getBottom();
 }
 
-Thing.prototype.isHitTop = function(thing) {
+Hitbox.prototype.isHitTop = function(thing) {
   thing.getBottom() >= this.y
       && thing.y <= (this.y + this.height)
       && thing.x >= this.x
       && thing.x <= (this.x + this.width)
 }
 
-
-
-
-
-var Ball = function(){
-  Thing.apply(this, arguments);
+var MovingThing = function() {
+  this.width;
+  this.height;
+  this.x;
+  this.y;
+  this.gravity;
+  this.speed;
+  this.vX;
+  this.vY;
 }
-Ball.prototype = Thing.prototype;
+
+var Ball = function() {
+  Hitbox.apply(this);
+  MovingThing.apply(this);
+  this.speed = 250;
+  this.x = 50;
+  this.y = 50;
+  this.vX = 5;
+  this.vY = 5;
+  this.vMax = 7;
+  this.vDefault = 5;
+  this.width = 25;
+  this.height = 25;
+  this.radius = 5;
+  this.spin = 0;
+}
+Ball.prototype = Hitbox.prototype;
 
 Ball.prototype.fooBar = function(hi) {
   console.log(hi);
 }
 
-var thing = new Thing;
+var thing = new Hitbox;
 var ball = new Ball;
 
 console.log(thing, thing.isHit(10, 20));
@@ -118,7 +145,6 @@ var mouse = {
 };
 
 var ball = {
-  direction: 120,
   speed: 250,
   x: 50,
   y: 50,
@@ -303,3 +329,44 @@ var doesBallHitBounds = function() {
 // let's play this game!
 var then = Date.now();
 main();
+
+function function_name () {
+/// only image will have alpha affected:
+context.globalAlpha = 0.5;
+context.drawImage(image, x, y);
+context.globalAlpha = 1.0;
+}
+
+
+
+
+var canvas = document.querySelector('canvas');
+var ctx = canvas.getContext('2d');
+ 
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+ 
+function loop() {
+  clear();
+  update();
+  draw();
+  queue();
+}
+ 
+function clear() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+ 
+function update() {
+// stub
+}
+ 
+function draw() {
+// stub
+}
+ 
+function queue() {
+  window.requestAnimationFrame(loop);
+}
+ 
+loop();
