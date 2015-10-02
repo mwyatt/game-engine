@@ -35,34 +35,34 @@ Hitbox.prototype.getLeft = function() {
 // is this too much to test for each thing on each loop?
 // must ensure that only hitboxes are tested that are likely to be hit
 // may need detection to check when items are in certain areas
-Hitbox.prototype.isHit = function(object) {
+Hitbox.prototype.isHit = function(entity) {
 
   // top
-  if (object.getBottom() >= this.getTop() && object.getRight() >= this.getLeft() && object.getLeft() <= this.getRight() && object.getBottom() < this.getBottom()) {
+  if (entity.getBottom() >= this.getTop() && entity.getRight() >= this.getLeft() && entity.getLeft() <= this.getRight() && entity.getBottom() < this.getBottom()) {
     return 1;
 
   // right
-  } else if (this.getTop() >= object.getBottom() && this.getRight() >= object.getLeft() && this.getBottom() >= object.getTop() && this.getLeft() < object.getLeft()) {
+  } else if (this.getTop() >= entity.getBottom() && this.getRight() >= entity.getLeft() && this.getBottom() >= entity.getTop() && this.getLeft() < entity.getLeft()) {
     return 2;
 
   // bottom
-  } else if (this.getTop() < object.getTop() && this.getRight() >= object.getLeft() && this.getBottom() <= object.getTop() && this.getLeft() >= object.getLeft()) {
+  } else if (this.getTop() < entity.getTop() && this.getRight() >= entity.getLeft() && this.getBottom() <= entity.getTop() && this.getLeft() >= entity.getLeft()) {
     return 3;
 
   // left
-  } else if (this.getTop() <= object.getBottom() && this.getRight() > object.getRight() && this.getBottom() >= object.getTop() && this.getLeft() >= object.getRight()) {
+  } else if (this.getTop() <= entity.getBottom() && this.getRight() > entity.getRight() && this.getBottom() >= entity.getTop() && this.getLeft() >= entity.getRight()) {
     return 4;
   }
 }
 
-Hitbox.prototype.isHitTop = function(thing) {
-  thing.getBottom() >= this.y
-      && thing.y <= (this.y + this.height)
-      && thing.x >= this.x
-      && thing.x <= (this.x + this.width)
+Hitbox.prototype.isHitTop = function(entity) {
+  return entity.getBottom() >= this.y
+    && entity.y <= (this.y + this.height)
+    && entity.x >= this.x
+    && entity.x <= (this.x + this.width);
 }
 
-var MovingThing = function() {
+var EntityMoving = function() {
   this.width;
   this.height;
   this.x;
@@ -74,182 +74,169 @@ var MovingThing = function() {
 }
 
 var Ball = function() {
-  Hitbox.apply(this);
-  MovingThing.apply(this);
   this.speed = 250;
-  this.x = 50;
-  this.y = 50;
+  this.x = 0;
+  this.y = 0;
   this.vX = 5;
   this.vY = 5;
   this.vMax = 7;
   this.vDefault = 5;
-  this.width = 25;
-  this.height = 25;
+  this.width = 10;
+  this.height = 10;
   this.radius = 5;
   this.spin = 0;
+  this.spinLife = 1;
 }
 Ball.prototype = Hitbox.prototype;
 
-Ball.prototype.fooBar = function(hi) {
-  console.log(hi);
+Ball.prototype.moveV = function() {
+
+  // factor in spin
+  if (this.spin) {
+    // console.log(this.spin);
+  };
+
+  this.x += this.vX;
+  this.y += this.vY;
 }
 
-var thing = new Hitbox;
-var ball = new Ball;
+var Block = function() {
+  this.speed = 250;
+  this.x = 0;
+  this.y = 0;
+  this.width = 20;
+  this.height = 20;
+}
+Block.prototype = Hitbox.prototype;
 
-console.log(thing, thing.isHit(10, 20));
-console.log(ball, ball.isHit(10, 20), ball.fooBar('ok'));
 
+Ball.prototype.bounceWall = function(canvas) {
 
+  // if this strikes the vertical walls, invert the 
+  // x-velocity vector of this
+  if (this.x + this.width >= canvas.width) {
+    this.vX = -this.vX;
+  } else if (this.x -this.radius <= 0) {
+    this.vX = -this.vX;
+  };
 
+  // if this strikes the horizontal walls, invert the 
+  // x-velocity vector of this
+  if (this.y + this.width >= canvas.height) {
+    this.vY = -this.vY;
+  } else if (this.y <= 0) {
+    this.vY = -this.vY;
+  };
 
+  // goes outside canvas
+  if (this.y < 0) {
+    this.y = 0;
+  } else if (this.x < 0) {
+    this.x = 0;
+  } else if (this.x > canvas.width) {
+    this.x = canvas.width - this.width;
+  } else if (this.y > canvas.height) {
+    this.y = canvas.height - this.height;
+  };
+}
 
+var Paddle = function() {
+  this.x = 0;
+  this.y = 0;
+  this.width = 150;
+  this.height = 10;
+}
+Paddle.prototype = Hitbox.prototype;
 
-// setup canvas
-var canvas = document.createElement("canvas");
-var ctx = canvas.getContext("2d");
-canvas.width = 800;
-canvas.height = 600;
-document.body.appendChild(canvas);
-
-// assets - background
-var bgReady = false;
-var bgImage = new Image();
-bgImage.onload = function () {
-  bgReady = true;
-};
-bgImage.src = "asset/bg.png";
-
-// assets - paddle
-var paddleReady = false;
-var paddleImage = new Image();
-paddleImage.onload = function () {
-  paddleReady = true;
-};
-paddleImage.src = "asset/blicka.png";
-
-// assets - ball
-var ballReady = false;
-var ballImage = new Image();
-ballImage.onload = function () {
-  ballReady = true;
-};
-ballImage.src = "asset/ball.png";
+var Mouse = function() {
+  this.x = 0;
+  this.y = 0;
+  this.speedX = 0;
+  this.prevX = 0;
+}
 
 // game objects
-var mouse = {
-  x: 0,
-  y: 0,
-  speedX: 0,
-  prevX: 0
+var mouse = new Mouse;
+var ball = new Ball;
+ball.x = 100;
+ball.y = 100;
+
+var paddle = new Paddle;
+
+var blocks = [];
+for (var i = 30 - 1; i >= 0; i--) {
+  blocks[i] = new Block;
+  blocks[i].y = 20;
+  blocks[i].x = (30 * i);
 };
 
-var ball = {
-  speed: 250,
-  x: 50,
-  y: 50,
-  vX: 5,
-  vY: 5,
-  vMax: 7,
-  vDefault: 5,
-  width: 25,
-  height: 25,
-  radius: 5,
-  spin: 0,
-  getTop: function() {
-    return this.y;
-  },
-  getRight: function() {
-    return this.x + this.width;
-  },
-  getBottom: function() {
-    return this.y + this.height;
-  },
-  getLeft: function() {
-    return this.x;
-  },
-  hit: function(x, y) {
-    return x >= this.getLeft() && x <= this.getRight() && y >= this.getTop() && y <= this.getBottom();
-  }
+// setup canvas and context
+var canvasElement = document.createElement("canvas");
+canvasElement.width = 800;
+canvasElement.height = 600;
+var stage = {
+  canvas: canvasElement,
+  ctx: canvasElement.getContext("2d")
 };
 
-var paddle = {
-  width: 150,
-  height: 25,
-  x: 0,
-  y: 0
+// the loop game loop
+var timeThen = Date.now();
+var timeNow;
+var timeDelta;
+stage.loop = function () {
+  timeNow = Date.now();
+  timeDelta = timeNow - timeThen;
+
+  // update positions of all things
+  stage.update(timeDelta / 1000);
+
+  // draw objects
+  stage.render();
+
+  // store time to refer to at start
+  timeThen = timeNow;
+  
+  // request to do this again asap
+  window.requestAnimationFrame(stage.loop);
 };
 
-var block = {
-  width: 150,
-  height: 150,
-  x: 0,
-  y: 0
+// draw objects
+stage.render = function () {
+
+  // clear first
+  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+  // bg
+  this.ctx.fillStyle = '#eee';
+  this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+  // paddle
+  this.ctx.fillStyle = '#666';
+  this.ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+
+  // ball
+  this.ctx.fillStyle = '#666';
+  this.ctx.fillRect(ball.x, ball.y, ball.width, ball.height);
+
+  // block
+  this.ctx.fillStyle = '#666';
+  for (var i = blocks.length - 1; i >= 0; i--) {
+    if (i in blocks) {
+      this.ctx.fillRect(blocks[i].x, blocks[i].y, blocks[i].width, blocks[i].height);
+    };
+  };
 };
 
-
-
-
-
-
-// handle keyboard controls
-var keysDown = {};
-
-addEventListener("keydown", function (e) {
-  keysDown[e.keyCode] = true;
-}, false);
-
-addEventListener("keyup", function (e) {
-  delete keysDown[e.keyCode];
-}, false);
-
-canvas.addEventListener('mousemove', function(e) {
-  var rect = canvas.getBoundingClientRect();
-  mouse.x = e.clientX - rect.left;
-  mouse.y = e.clientY - rect.top;
-}, false);
-
+modifiers = 0;
 
 // update game objects
-var update = function (modifier) {
+stage.update = function (modifier) {
 
   // ball moves its velocity
-  ball.x += ball.vX;
-  ball.y += ball.vY;
+  ball.moveV();
 
-  // ball velocity limit
-  if (ball.vX > 0 && ball.vX >= ball.vMax) {
-    ball.vX = ball.vMax;
-  } else if ((ball.vX + ball.vX) >= ball.vMax) {
-    ball.vX = -ball.vMax;
-  };
-
-  // if ball strikes the vertical walls, invert the 
-  // x-velocity vector of ball
-  if (ball.x + ball.width >= canvas.width) {
-    ball.vX = -ball.vX;
-  } else if (ball.x -ball.radius <= 0) {
-    ball.vX = -ball.vX;
-  };
-
-  // if ball strikes the horizontal walls, invert the 
-  // x-velocity vector of ball
-  if (ball.y + ball.width >= canvas.height) {
-    ball.vY = -ball.vY;
-  } else if (ball.y <= 0) {
-    ball.vY = -ball.vY;
-  };
-
-  // ball leaves canvas
-  if (ball.y < 0) {
-    ball.y = 0;
-  } else if (ball.x < 0) {
-    ball.x = 0;
-  } else if (ball.x > canvas.width) {
-    ball.x = canvas.width - ball.width;
-  } else if (ball.y > canvas.height) {
-    ball.y = canvas.height - ball.height;
-  };
+  // ball bouncing off wall
+  ball.bounceWall(this.canvas);
 
   // collision ball with paddle
   // top
@@ -265,7 +252,7 @@ var update = function (modifier) {
     // ball always above paddle
     ball.y -= paddle.height;
 
-    // load ball with spin
+    // load ball with spin if there
     ball.spin = mouse.speedX;
   };
 
@@ -279,94 +266,41 @@ var update = function (modifier) {
   mouse.speedX = mouse.prevX - mouse.x;
   mouse.prevX = mouse.x;
 
-  // block
-  block.x = 20;
-  block.y = 20;
+  // ball hits block
+  for (var i = blocks.length - 1; i >= 0; i--) {
+    if (i in blocks) {
+      if (hitLocation = blocks[i].isHit(ball)) {
+        delete blocks[i];
+        
+      };
+    };
+  };
 };
 
-// draw everything
-var render = function () {
 
-  // clear first
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+/**
+ * events
+ */
+// store keys down in assoc array
+var keysDown = {};
 
-  // bg
-  ctx.fillStyle = '#eee';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+addEventListener("keydown", function (e) {
+  keysDown[e.keyCode] = true;
+}, false);
 
-  // paddle
-  ctx.fillStyle = '#000';
-  ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+addEventListener("keyup", function (e) {
+  delete keysDown[e.keyCode];
+}, false);
 
-  // ball
-  ctx.fillRect(ball.x, ball.y, ball.width, ball.height);
+// store mouse pos
+stage.canvas.addEventListener('mousemove', function(e) {
+  var rect = stage.canvas.getBoundingClientRect();
+  mouse.x = e.clientX - rect.left;
+  mouse.y = e.clientY - rect.top;
+}, false);
 
-  // block
-  ctx.fillRect(block.x, block.y, block.width, block.height);
-};
-
-// the main game loop
-var main = function () {
-  var now = Date.now();
-  var delta = now - then;
-
-  update(delta / 1000);
-  render();
-
-  then = now;
-
-  // Request to do this again ASAP
-  requestAnimationFrame(main);
-};
-
-var doesBallHitBounds = function() {
-  return (ball.x + ball.width >= canvas.width)
-    || (ball.x -ball.radius <= 0)
-    || (ball.y + ball.width >= canvas.height)
-    || (ball.y <= 0);
-};
+// append canvas to dom
+document.body.appendChild(stage.canvas);
 
 // let's play this game!
-var then = Date.now();
-main();
-
-function function_name () {
-/// only image will have alpha affected:
-context.globalAlpha = 0.5;
-context.drawImage(image, x, y);
-context.globalAlpha = 1.0;
-}
-
-
-
-
-var canvas = document.querySelector('canvas');
-var ctx = canvas.getContext('2d');
- 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
- 
-function loop() {
-  clear();
-  update();
-  draw();
-  queue();
-}
- 
-function clear() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
- 
-function update() {
-// stub
-}
- 
-function draw() {
-// stub
-}
- 
-function queue() {
-  window.requestAnimationFrame(loop);
-}
- 
-loop();
+stage.loop();
