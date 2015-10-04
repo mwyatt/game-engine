@@ -55,12 +55,12 @@ Hitbox.prototype.isHit = function(entity) {
   }
 }
 
-Hitbox.prototype.isHitTop = function(entity) {
-  return entity.getBottom() >= this.y
-    && entity.y <= (this.y + this.height)
-    && entity.x >= this.x
-    && entity.x <= (this.x + this.width);
-}
+// Hitbox.prototype.isHitTop = function(entity) {
+//   return entity.getBottom() >= this.getTop()
+//     && entity.getTop() <= this.getBottom()
+//     && entity.getLeft() >= this.getLeft()
+//     && entity.getLeft() <= this.getRight();
+// }
 
 var EntityMoving = function() {
   this.width;
@@ -110,7 +110,7 @@ var Block = function() {
 Block.prototype = Hitbox.prototype;
 
 
-Ball.prototype.bounceWall = function(canvas) {
+Ball.prototype.bounceCanvas = function(canvas) {
 
   // if this strikes the vertical walls, invert the 
   // x-velocity vector of this
@@ -236,15 +236,11 @@ stage.update = function (modifier) {
   ball.moveV();
 
   // ball bouncing off wall
-  ball.bounceWall(this.canvas);
+  ball.bounceCanvas(this.canvas);
 
   // collision ball with paddle
   // top
-  if ((ball.y + ball.height) >= paddle.y
-    && ball.y <= (paddle.y + paddle.height)
-    && ball.x >= paddle.x
-    && ball.x <= (paddle.x + paddle.width)
-    ) {
+  if (paddle.isHit(ball) == 1) {
 
     // ball go up
     ball.vY = -ball.vY;
@@ -270,8 +266,12 @@ stage.update = function (modifier) {
   for (var i = blocks.length - 1; i >= 0; i--) {
     if (i in blocks) {
       if (hitLocation = blocks[i].isHit(ball)) {
+
+        // 
+        if (hitLocation == 1 || hitLocation == 3) {
+          
+        };
         delete blocks[i];
-        
       };
     };
   };
