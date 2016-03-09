@@ -117,16 +117,15 @@ Ball.prototype.contactPaddle = function() {
 }
 
 Ball.prototype.moveVelocity = function() {
-  timeModified
   this.x += this.vX;
   this.y += this.vY;
 }
 
-Ball.prototype.bounceWalls = function(canvas) {
+Ball.prototype.bounceWalls = function() {
 
   // if this strikes the vertical walls, invert the 
   // x-velocity vector of this
-  if (this.x + this.w >= canvas.width) {
+  if (this.x + this.w >= Stage.canvas.width) {
     this.vX = -this.vX;
   } else if (this.x -this.radius <= 0) {
     this.vX = -this.vX;
@@ -134,7 +133,7 @@ Ball.prototype.bounceWalls = function(canvas) {
 
   // if this strikes the horizontal walls, invert the 
   // x-velocity vector of this
-  if (this.y + this.w >= canvas.height) {
+  if (this.y + this.w >= Stage.canvas.height) {
     this.vY = -this.vY;
   } else if (this.y <= 0) {
     this.vY = -this.vY;
@@ -145,10 +144,10 @@ Ball.prototype.bounceWalls = function(canvas) {
     this.y = 0;
   } else if (this.x < 0) {
     this.x = 0;
-  } else if (this.x > canvas.width) {
-    this.x = canvas.width - this.w;
-  } else if (this.y > canvas.height) {
-    this.y = canvas.height - this.h;
+  } else if (this.x > Stage.canvas.width) {
+    this.x = Stage.canvas.width - this.w;
+  } else if (this.y > Stage.canvas.height) {
+    this.y = Stage.canvas.height - this.h;
   };
 }
 
@@ -201,18 +200,12 @@ var paddle = new Paddle;
 Stage.loop = function () {
   timeNow = Date.now();
   timeDelta = timeNow - timeThen;
-  timeModified = timeDelta / 1000;
+  timeModified = timeDelta;
+  // timeModified = timeDelta / 1000;
 
-  // update positions of all things
-  Stage.update(timeModified);
-
-  // draw objects
+  Stage.update();
   Stage.render();
-
-  // store time to refer to at start
   timeThen = timeNow;
-  
-  // request to do this again asap
   window.requestAnimationFrame(Stage.loop);
 };
 
@@ -228,24 +221,24 @@ Stage.render = function () {
 
   // paddle
   this.ctx.fillStyle = '#666';
-  this.ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+  this.ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
 
   // ball
   this.ctx.fillStyle = '#666';
-  this.ctx.fillRect(ball.x, ball.y, ball.width, ball.height);
+  this.ctx.fillRect(ball.x, ball.y, ball.w, ball.h);
 
   // block
   this.ctx.fillStyle = '#666';
   for (var i = blocks.length - 1; i >= 0; i--) {
     if (i in blocks) {
-      this.ctx.fillRect(blocks[i].x, blocks[i].y, blocks[i].width, blocks[i].height);
+      this.ctx.fillRect(blocks[i].x, blocks[i].y, blocks[i].w, blocks[i].h);
     };
   };
 };
 
 // update game objects
-Stage.update = function (modifier) {
-  ball.bounceWalls(this.canvas);
+Stage.update = function () {
+  ball.bounceWalls();
   ball.contactPaddle();
   ball.moveVelocity();
   paddle.mouseMove();
