@@ -109,7 +109,7 @@ Ball.prototype.contactPaddle = function() {
     ball.vY = -ball.vY;
 
     // ball always above paddle
-    ball.y -= paddle.height;
+    ball.y -= paddle.h;
 
     // load ball with spin if there
     ball.spin = mouse.vX;
