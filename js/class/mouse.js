@@ -6,8 +6,8 @@ var Mouse = function() {
 }
 
 Mouse.prototype.storeVelocity = function() {
-  mouse.vX = mouse.vXHistory - mouse.x;
-  mouse.vXHistory = mouse.x;
+  this.vX = this.vXHistory - this.x;
+  this.vXHistory = this.x;
 }
 
 module.exports = Mouse;

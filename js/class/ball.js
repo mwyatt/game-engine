@@ -8,8 +8,8 @@ var Ball = function() {
   this.vY = 5;
   this.vMax = 7;
   this.vDefault = 5;
-  this.w = 10;
-  this.h = 10;
+  this.w = 30;
+  this.h = 30;
   this.radius = 5;
   this.spin = 0;
   this.spinLife = 1;
@@ -32,18 +32,18 @@ Ball.prototype.contactBlock = function() {
   };
 }
 
-Ball.prototype.contactPaddle = function() {
-  if (paddle.isHitTop(ball)) {
+Ball.prototype.contactPaddle = function(paddle, mouse) {
+  if (paddle.isHitTop(this)) {
 
     // ball go up
-    ball.vY = -ball.vY;
+    this.vY = -this.vY;
 
     // ball always above paddle
-    ball.y -= paddle.h;
+    this.y -= paddle.h;
 
     // load ball with spin if there
-    ball.spin = mouse.vX;
-    console.log(ball.spin);
+    this.spin = mouse.vX;
+    console.log(this.spin);
   };
 }
 
@@ -52,7 +52,7 @@ Ball.prototype.moveVelocity = function() {
   this.y += this.vY;
 }
 
-Ball.prototype.bounceWalls = function() {
+Ball.prototype.bounceWalls = function(Stage) {
 
   // if this strikes the vertical walls, invert the 
   // x-velocity vector of this

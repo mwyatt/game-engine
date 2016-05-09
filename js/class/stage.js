@@ -1,11 +1,13 @@
-var entityFactory = require('./class/entity');
-var mouseFactory = require('./class/mouse');
-var ballFactory = require('./class/ball');
-var paddleFactory = require('./class/paddle');
+var entityFactory = require('./entity');
+var mouseFactory = require('./mouse');
+var ballFactory = require('./ball');
+var blockFactory = require('./block');
+var paddleFactory = require('./paddle');
 
 var mouse = new mouseFactory();
 var ball = new ballFactory();
 var paddle = new paddleFactory;
+var canvasElement = document.createElement('canvas');
 
 var blocks = [];
 var keysDown = {};
@@ -18,41 +20,42 @@ ball.x = 100;
 ball.y = 100;
 
 for (var index = 30 - 1; index >= 0; index--) {
-  blocks[index] = new Block;
+  blocks[index] = new blockFactory();
   blocks[index].y = 20;
   blocks[index].x = (30 * index);
 };
 
-var canvasElement = document.createElement("canvas");
-
 canvasElement.width = 800;
 canvasElement.height = 600;
 
-var Stage = {
-  canvas: canvasElement,
-  ctx: canvasElement.getContext("2d")
+var Stage = function() {
+  this.canvas = canvasElement;
+  this.ctx = canvasElement.getContext('2d');
+  this.loop(this);
 };
 
-Stage.loop = function () {
+Stage.prototype.loop = function (stage) {
   timeNow = Date.now();
   timeDelta = timeNow - timeThen;
   timeModified = timeDelta;
-  // timeModified = timeDelta / 1000;
+  var stage = this;
 
-  Stage.update();
-  Stage.render();
+  this.update();
+  this.render();
   timeThen = timeNow;
-  window.requestAnimationFrame(Stage.loop);
+  window.requestAnimationFrame(function() {
+    stage.loop(stage);
+  });
 };
 
-Stage.render = function () {
+Stage.prototype.render = function () {
 
-  // clear first
-  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+  // clear 
+  this.ctx.clearRect(0, 0, canvasElement.width, canvasElement.height);
 
   // bg
   this.ctx.fillStyle = '#eee';
-  this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+  this.ctx.fillRect(0, 0, canvasElement.width, canvasElement.height);
 
   // paddle
   this.ctx.fillStyle = '#666';
@@ -71,11 +74,11 @@ Stage.render = function () {
   };
 };
 
-Stage.update = function () {
-  ball.bounceWalls();
-  ball.contactPaddle();
+Stage.prototype.update = function () {
+  ball.bounceWalls(this);
+  ball.contactPaddle(paddle, mouse);
   ball.moveVelocity();
-  paddle.mouseMove();
+  paddle.mouseMove(mouse);
   mouse.storeVelocity();
 };
 
@@ -88,16 +91,13 @@ addEventListener("keyup", function (e) {
 }, false);
 
 // store mouse pos
-Stage.canvas.addEventListener('mousemove', function(e) {
-  var rect = Stage.canvas.getBoundingClientRect();
+canvasElement.addEventListener('mousemove', function(e) {
+  var rect = canvasElement.getBoundingClientRect();
   mouse.x = e.clientX - rect.left;
   mouse.y = e.clientY - rect.top;
 }, false);
 
 // append canvas to dom
-document.body.appendChild(Stage.canvas);
-
-// let's play this game!
-Stage.loop();
+document.body.appendChild(canvasElement);
 
 module.exports = Stage;

@@ -1,16 +1,16 @@
 var entityFactory = require('./entity');
 
 var Paddle = function() {
-  this.w = 150;
-  this.h = 10;
+  this.w = 120;
+  this.h = 30;
 }
 
 Paddle.prototype = entityFactory.prototype;
 
 Paddle.prototype.mouseMove = function(mouse) {
   if (mouse.x && mouse.y) {
-    paddle.x = mouse.x;
-    paddle.y = mouse.y;
+    this.x = mouse.x;
+    this.y = mouse.y;
   };
 };
 
