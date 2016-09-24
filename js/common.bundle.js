@@ -14,11 +14,14 @@ var Block = require('./block')
 var paddle = new Paddle()
 var blocks = []
 
+ball.x = 200
+ball.y = 200
+
 canvasElement.width = stage.w
 canvasElement.height = stage.h
 
 var index = 0
-while (index < 2) {
+while (index < 50) {
   var ex = 25 * index
   var ye = 20
   var block = new Block(ex, ye)
@@ -62,8 +65,7 @@ function update() {
   ball.contactPaddle(paddle, mouse)
   ball.moveVelocity(timeDelta)
   blocks.forEach(function(block) {
-    if (!block.isDestroyed() && block.isHit(ball)) {
-      console.log('boom');
+    if (!block.isDestroyed() && (block.isHitBottom(ball) || block.isHitTop(ball))) {
       block.destroyed = true
       ball.bounceVertical()
     }
@@ -72,9 +74,9 @@ function update() {
 
 function render() {
   stage.render(canvasElement, canvasContext)
-  paddle.render(canvasContext)
-  ball.render(canvasContext)
   blocks.forEach(function(block) {
     block.render(canvasContext)
   })
+  paddle.render(canvasContext)
+  ball.render(canvasContext)
 }

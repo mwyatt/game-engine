@@ -18,7 +18,9 @@ module.exports = class Block extends Entity {
   render(canvasContext) {
     if (!this.destroyed) {
       canvasContext.fillStyle = '#666'
-      canvasContext.fillRect(this.x, this.y, this.w, this.h)
+    } else {
+      canvasContext.fillStyle = '#ccc'
     }
+    canvasContext.fillRect(this.x, this.y, this.w, this.h)
   }
 }
