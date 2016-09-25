@@ -65,9 +65,16 @@ function update() {
   ball.contactPaddle(paddle, mouse)
   ball.moveVelocity(timeDelta)
   blocks.forEach(function(block) {
-    if (!block.isDestroyed() && (block.isHitBottom(ball) || block.isHitTop(ball))) {
-      block.destroyed = true
-      ball.bounceVertical()
+    if (!block.isDestroyed()) {
+      var blockHit = block.isHit(ball)
+      if (blockHit) {
+        if (blockHit === (block.hitTop || block.hitBottom)) {
+          ball.bounceVertical()
+        } else if (blockHit === (block.hitLeft || block.hitRight)) {
+          ball.bounceHorisontal()
+        }
+        block.destroyed = true
+      }
     }
   })
 }

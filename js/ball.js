@@ -33,6 +33,10 @@ module.exports = class Ball extends Entity {
     this.vY = -this.vY
   }
 
+  bounceHorisontal() {
+    this.vX = -this.vX
+  }
+
   hitStage(stage) {
 
     // if this strikes the vertical walls, invert the 

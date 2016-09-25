@@ -1,48 +1,61 @@
 module.exports = class Entity {
   
-    getTop() {
-      return this.y
-    }
+  constructor() {
+    this.hitTop = 1
+    this.hitRight = 2
+    this.hitBottom = 3
+    this.hitLeft = 4
+  }
 
-    getRight() {
-      return this.x + this.w
-    }
+  getTop() {
+    return this.y
+  }
 
-    getBottom() {
-      return this.y + this.h
-    }
+  getRight() {
+    return this.x + this.w
+  }
 
-    getLeft() {
-      return this.x
-    }
+  getBottom() {
+    return this.y + this.h
+  }
 
-    // find out if entity is past left side?
-    isPastLeft(entity) {
+  getLeft() {
+    return this.x
+  }
 
-    }
+  isInsideTopAndBottom(entity) {
+    return this.getTop() <= entity.getBottom() && this.getBottom() >= entity.getTop()
+  }
 
-    // isHit(entity) {
-    //   return this.getTop() > entity.getTop()
-    //     && this.getRight() < entity.getLeft()
-    //     && this.getLeft() < entity.getRight()
-    //     && this.getBottom < entity.getBottom()
-    // }
+  isInsideLeftAndRight(entity) {
+    return this.getLeft() <= entity.getRight() && this.getRight() >= entity.getLeft()
+  }
 
-    isHitTop(entity) {
-      return entity.getBottom() >= this.getTop() && entity.getRight() >= this.getLeft() && entity.getLeft() <= this.getRight() && entity.getBottom() < this.getBottom()
+  isHit(entity) {
+    if (this.isHitTop(entity)) {
+      return this.hitTop
+    } else if (this.isHitRight(entity)) {
+      return this.hitRight
+    } else if (this.isHitBottom(entity)) {
+      return this.hitBottom
+    } else if (this.isHitLeft(entity)) {
+      return this.hitLeft
+    } 
+  }
 
-      return this.getTop() > entity.getTop() && this.getRight() >= entity.getLeft() && this.getBottom() <= entity.getTop() && this.getLeft() <= entity.getRight()
-    }
+  isHitTop(entity) {
+    return this.getTop() <= entity.getBottom() && this.isInsideLeftAndRight(entity) && this.getBottom() > entity.getBottom()
+  }
 
-    // isHitRight(entity) {
-    //   return this.getTop() >= entity.getBottom() && this.getRight() >= entity.getLeft() && this.getBottom() >= entity.getTop() && this.getLeft() < entity.getLeft()
-    // }
+  isHitRight(entity) {
+    return this.getRight() <= entity.getLeft() && this.isInsideTopAndBottom(entity) && this.getLeft() < entity.getLeft()
+  }
 
-    isHitBottom(entity) {
-      return this.getTop() < entity.getTop() && this.getRight() >= entity.getLeft() && this.getBottom() >= entity.getTop() && this.getLeft() <= entity.getRight()
-    }
+  isHitBottom(entity) {
+    return this.getBottom() >= entity.getTop() && this.isInsideLeftAndRight(entity) && this.getTop() < entity.getTop()
+  }
 
-    // isHitLeft(entity) {
-    //   return this.getTop() <= entity.getBottom() && this.getRight() > entity.getRight() && this.getBottom() >= entity.getTop() && this.getLeft() >= entity.getRight()
-    // }
+  isHitLeft(entity) {
+    return this.getLeft() <= entity.getRight() && this.isInsideTopAndBottom(entity) && this.getRight() > entity.getRight()
+  }
 }
