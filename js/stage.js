@@ -85,10 +85,6 @@ Stage.render = function() {
   canvasContext.fillStyle = '#d6d6d6'
   canvasContext.fillRect(0, Stage.h / 1.5, Stage.w, Stage.h)
 
-  canvasContext.fillStyle = '#666'
-  canvasContext.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
-  canvasContext.fillRect(ball.x, ball.y, ball.w, ball.h)
-
   blocks.forEach(function(block) {
     if (block.isDestroyed()) {
       canvasContext.fillStyle = '#d6d6d6'
@@ -97,6 +93,11 @@ Stage.render = function() {
     }
     canvasContext.fillRect(block.x, block.y, block.w, block.h)
   })
+  
+  canvasContext.fillStyle = '#666'
+  canvasContext.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
+  canvasContext.fillRect(ball.x, ball.y, ball.w, ball.h)
+
 }
 
 module.exports = Stage
