@@ -34,10 +34,10 @@ module.exports = class Entity {
   isHit(entity) {
     if (this.isHitTop(entity)) {
       return this.hitTop
-    } else if (this.isHitRight(entity)) {
-      return this.hitRight
     } else if (this.isHitBottom(entity)) {
       return this.hitBottom
+    } else if (this.isHitRight(entity)) {
+      return this.hitRight
     } else if (this.isHitLeft(entity)) {
       return this.hitLeft
     } 
@@ -48,7 +48,7 @@ module.exports = class Entity {
   }
 
   isHitRight(entity) {
-    return this.getRight() <= entity.getLeft() && this.isInsideTopAndBottom(entity) && this.getLeft() < entity.getLeft()
+    return this.getRight() >= entity.getLeft() && this.isInsideTopAndBottom(entity) && this.getLeft() < entity.getLeft()
   }
 
   isHitBottom(entity) {

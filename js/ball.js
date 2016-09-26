@@ -72,7 +72,7 @@ module.exports = class Ball extends Entity {
   moveVelocity(timeDelta) {
     if (this.spinDuration > 0) {
       var spinPositive = this.spin < 0 ? -this.spin : this.spin
-      var spinAmount = .002 * spinPositive
+      var spinAmount = .005 * spinPositive
       this.spinDuration -= timeDelta
       if (this.spinDuration < 500) {
         if (this.spin > 0) {

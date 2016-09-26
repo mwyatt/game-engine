@@ -4,15 +4,15 @@ module.exports = class Block extends Entity {
 
   constructor(x, y) {
     super()
-    this.w = 20
-    this.h = 20
+    this.w = 35
+    this.h = 15
     this.x = x
     this.y = y
     this.lives = 1
   }
 
   isDestroyed() {
-    return !this.lives
+    return this.lives < 1
   }
 
   takeDamage() {
