@@ -16,9 +16,4 @@ module.exports = class Paddle extends Entity {
       this.y = mouse.y
     }
   }
-
-  render(canvasContext) {
-    canvasContext.fillStyle = '#666'
-    canvasContext.fillRect(this.x, this.y, this.w, this.h)
-  }
 }

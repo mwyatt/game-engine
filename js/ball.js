@@ -6,13 +6,13 @@ module.exports = class Ball extends Entity {
     super()
     this.w = 10
     this.h = 10
+    this.radius = this.w / 2
     this.x = 0
     this.y = 0
-    this.vX = .3
-    this.vY = .3
-    this.radius = 5
+    this.vX = .4
+    this.vY = .4
     this.spin = 0
-    this.spinLife = 1
+    this.spinDuration
   }
 
   contactPaddle(paddle, mouse) {
@@ -20,12 +20,14 @@ module.exports = class Ball extends Entity {
 
       // ball go up
       this.vY = -this.vY
+      this.vX = 0
 
       // ball always above paddle
       this.y -= paddle.h
 
       // load ball with spin if there
-      this.spin = mouse.vX
+      this.spin = mouse.vX > 10 ? 10 : mouse.vX
+      this.spinDuration = 750
     }
   }
 
@@ -68,12 +70,23 @@ module.exports = class Ball extends Entity {
   }
 
   moveVelocity(timeDelta) {
-    this.x += this.vX * timeDelta
-    this.y += this.vY * timeDelta
-  }
+    if (this.spinDuration > 0) {
+      var spinPositive = this.spin < 0 ? -this.spin : this.spin
+      var spinAmount = .002 * spinPositive
+      this.spinDuration -= timeDelta
+      if (this.spinDuration < 500) {
+        if (this.spin > 0) {
+          this.vX += spinAmount
+        } else {
+          this.vX -= spinAmount
+        }
+      }
+    }
 
-  render(canvasContext) {
-    canvasContext.fillStyle = '#666'
-    canvasContext.fillRect(this.x, this.y, this.w, this.h)
+    this.vX = this.vX > 1 ? 1 : this.vX
+    this.vY = this.vY > 1 ? 1 : this.vY
+
+    this.x += parseInt(this.vX * timeDelta)
+    this.y += parseInt(this.vY * timeDelta)
   }
 }

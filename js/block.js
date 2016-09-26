@@ -8,19 +8,23 @@ module.exports = class Block extends Entity {
     this.h = 20
     this.x = x
     this.y = y
-    this.destroyed = false
+    this.lives = 1
   }
 
   isDestroyed() {
-    return this.destroyed
+    return !this.lives
   }
 
-  render(canvasContext) {
-    if (!this.destroyed) {
-      canvasContext.fillStyle = '#666'
-    } else {
-      canvasContext.fillStyle = '#ccc'
-    }
-    canvasContext.fillRect(this.x, this.y, this.w, this.h)
+  takeDamage() {
+    this.lives--
   }
+
+  // render() {
+  //   if (!this.destroyed) {
+  //     canvasContext.fillStyle = '#666'
+  //   } else {
+  //     canvasContext.fillStyle = '#ccc'
+  //   }
+  //   canvasContext.fillRect(this.x, this.y, this.w, this.h)
+  // }
 }

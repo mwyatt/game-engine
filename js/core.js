@@ -1,0 +1,1 @@
+// here the core elements are managed such as time delta and canvas and context
