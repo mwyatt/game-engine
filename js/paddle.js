@@ -5,8 +5,8 @@ module.exports = class Paddle extends Entity {
 
   constructor() {
     super()
-    this.w = 160
-    this.h = 10
+    this.w = 120
+    this.h = 14
     this.x = 0
     this.y = stage.h 
   }

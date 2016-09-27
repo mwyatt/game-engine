@@ -5,7 +5,7 @@ module.exports = class Block extends Entity {
   constructor(x, y) {
     super()
     this.w = 32
-    this.h = 10
+    this.h = 20
     this.x = x
     this.y = y
     this.lives = 1

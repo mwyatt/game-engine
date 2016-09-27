@@ -14,6 +14,8 @@ var timeNow
 var timeDelta
 var timeModified
 var Core = {}
+var score = 0
+var fps = 0
 
 Core.getCanvasElement = function() {
   return canvasElement
@@ -29,6 +31,7 @@ Core.getCanvasContext = function() {
 
 Core.init = function() {
   canvasElement = document.createElement('canvas')
+  canvasElement.style.cursor = 'none'
   canvasContext = canvasElement.getContext('2d')
   canvasElement.width = stage.w
   canvasElement.height = stage.h
@@ -42,7 +45,6 @@ Core.init = function() {
   canvasElement.addEventListener('mousemove', function(e) {
     var rect = canvasElement.getBoundingClientRect()
     mouse.x = e.clientX - rect.left
-    // mouse.y = e.clientY - rect.top
     mouse.storeVelocity()
   }, false)
 }
@@ -62,16 +64,19 @@ Core.update = function() {
   ball.hitStage()
   ball.contactPaddle(paddle, mouse)
   ball.moveVelocity(timeDelta)
+  var hitThisFrame
   blocks.forEach(function(block) {
     if (!block.isDestroyed()) {
       var hitResult = block.isHit(ball)
-      if (hitResult) {
+      if (hitResult && !hitThisFrame) {
+        hitThisFrame = true
         if (hitResult === block.hitTop || hitResult === block.hitBottom) {
           ball.bounceVertical()
         } else if (hitResult === block.hitLeft || hitResult === block.hitRight) {
           ball.bounceHorisontal()
         }
         block.takeDamage()
+        score += 10
       }
     }
   })
@@ -80,7 +85,7 @@ Core.update = function() {
 Core.render = function() {
   canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height)
 
-  canvasContext.fillStyle = '#eee'
+  canvasContext.fillStyle = 'rgba(0, 0, 0, 0.1)'
   canvasContext.fillRect(0, 0, canvasElement.width, canvasElement.height)
 
   blocks.forEach(function(block) {
@@ -89,14 +94,18 @@ Core.render = function() {
     } else if (block.lives == 2) {
       canvasContext.fillStyle = '#333'
     } else if (block.lives == 1) {
-      canvasContext.fillStyle = '#666'
+      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.2)'
     }
     canvasContext.fillRect(block.x, block.y, block.w, block.h)
   })
   
-  canvasContext.fillStyle = '#666'
+  canvasContext.fillStyle = 'rgba(0, 0, 0, 0.3)'
   canvasContext.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
   canvasContext.fillRect(ball.x, ball.y, ball.w, ball.h)
+
+  canvasContext.font = "21px Arial";
+  canvasContext.fillStyle = "rgba(0, 0, 0, 0.3)";
+  canvasContext.fillText(score, 20, stage.h - 20);
 }
 
 module.exports = Core

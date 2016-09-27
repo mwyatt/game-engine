@@ -5,32 +5,45 @@ module.exports = class Ball extends Entity {
 
   constructor() {
     super()
-    this.w = 10
-    this.h = 10
+    this.w = 14
+    this.h = 14
     this.radius = this.w / 2
     this.x = 0
     this.y = 0
-    this.vX = .4
-    this.vY = .4
+    this.vX = 0
+    this.vMaxPositive = .4
+    this.vMaxNegative = -.4
+    this.vY = this.vMaxNegative
     this.spin = 0
     this.spinDuration
   }
 
   contactPaddle(paddle, mouse) {
-    if (paddle.isHitTop(this)) {
+    var hitResult = paddle.isHit(this)
+    if (hitResult == this.hitTop || hitResult == this.hitLeft || hitResult == this.hitRight) {
 
       // ball go up
       if (this.vY > 0) {
         this.vY = -this.vY
       }
-      this.vX = 0
 
       // ball always above paddle
-      this.y -= paddle.h
+      if (this.getBottom() > paddle.getTop()) {
+        this.y = paddle.y - paddle.h
+      }
 
-      // load ball with spin if there
+      // max spin 
       this.spin = mouse.vX > 10 ? 10 : mouse.vX
-      this.spinDuration = 500
+      this.spin = mouse.vX < -10 && mouse.vX < 0 ? -10 : this.spin
+
+      var spinPositive = this.spin < 0 ? -this.spin : this.spin
+
+      // reset vx if trying to spin
+      if (spinPositive > 2) {
+        this.vX = 0
+      }
+
+      this.spinDuration = (spinPositive / 2) * 100
     }
   }
 
@@ -44,39 +57,37 @@ module.exports = class Ball extends Entity {
 
   hitStage() {
 
-    // if this strikes the vertical walls, invert the 
-    // x-velocity vector of this
-    if (this.x + this.w >= stage.w) {
-      this.vX = -this.vX
-    } else if (this.x -this.radius <= 0) {
-      this.vX = -this.vX
-    }
-
-    // if this strikes the horizontal walls, invert the 
-    // x-velocity vector of this
-    if (this.y + this.w >= stage.h) {
-      this.vY = -this.vY
-    } else if (this.y <= 0) {
-      this.vY = -this.vY
-    }
-
-    // goes outside canvas
-    if (this.y < 0) {
-      this.y = 0
-    } else if (this.x < 0) {
-      this.x = 0
-    } else if (this.x > stage.w) {
+    // ball outside of play area?
+    if (this.getRight() > stage.w) {
       this.x = stage.w - this.w
-    } else if (this.y > stage.h) {
-      this.y = stage.h - this.h
+    } else if (this.getLeft() < 0) {
+      this.x = 0
+    } else if (this.getTop() < 0) {
+      this.y = 0
+    } else if (this.getBottom() > stage.h) {
+      this.y = stage.h - this.w
+    }
+
+    // if this strikes the vertical walls
+    if (this.getRight() == stage.w) {
+      this.vX = -this.vX
+    } else if (this.getLeft() == 0) {
+      this.vX = -this.vX
+    }
+
+    // if this strikes the horizontal walls
+    if (this.getBottom() == stage.h) {
+      this.vY = -this.vY
+    } else if (this.getTop() == 0) {
+      this.vY = -this.vY
     }
   }
 
   moveVelocity(timeDelta) {
     if (this.spinDuration > 0) {
-      var spinPositive = this.spin < 0 ? -this.spin : this.spin
-      var spinAmount = .005 * spinPositive
       this.spinDuration -= timeDelta
+      var spinPositive = this.spin < 0 ? -this.spin : this.spin
+      var spinAmount = (timeDelta / 10000) * spinPositive
       if (this.spin > 0) {
         this.vX += spinAmount
       } else {
@@ -84,8 +95,12 @@ module.exports = class Ball extends Entity {
       }
     }
 
-    this.vX = this.vX > 1 ? 1 : this.vX
-    this.vY = this.vY > 1 ? 1 : this.vY
+    // throttle v
+    if (this.vX > 0 && this.vX > this.vMaxPositive) {
+      this.vX = this.vMaxPositive
+    } else if (this.vX < 0 && this.vX < this.vMaxNegative) {
+      this.vX = this.vMaxNegative
+    }
 
     this.x += parseInt(this.vX * timeDelta)
     this.y += parseInt(this.vY * timeDelta)

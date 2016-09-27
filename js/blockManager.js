@@ -10,7 +10,7 @@ BlockManager.getLevel1Blocks = function() {
   var xDefault = -exampleBlock.w
   var y = 0
   var x = xDefault
-  while (index < 200) {
+  while (index < 100) {
     index++
     if ((x + exampleBlock.w) >= stage.w) {
       y += exampleBlock.h
@@ -18,7 +18,7 @@ BlockManager.getLevel1Blocks = function() {
     }
     x += exampleBlock.w
     var randOneToTen = parseInt(Math.random() * 10)
-    var lives = randOneToTen >= 5 ? 1 : 2
+    var lives = randOneToTen >= 5 ? 1 : 1
     blockConfig.push({x: x, y: y, type: 1, lives: lives})
   }
   blockConfig.forEach(function(config) {
