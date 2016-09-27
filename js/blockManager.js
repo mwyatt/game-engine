@@ -1,6 +1,6 @@
 var Block = require('./block')
+var stage = require('./stage')
 var BlockManager = {}
-var stageWidth = 320
 
 BlockManager.getLevel1Blocks = function() {
   var blockConfig = []
@@ -8,11 +8,11 @@ BlockManager.getLevel1Blocks = function() {
   var index = 0
   var exampleBlock = new Block(0, 0)
   var xDefault = -exampleBlock.w
-  var y = 10
+  var y = 0
   var x = xDefault
-  while (index < 25) {
+  while (index < 200) {
     index++
-    if ((x + exampleBlock.w) > stageWidth) {
+    if ((x + exampleBlock.w) >= stage.w) {
       y += exampleBlock.h
       x = xDefault
     }

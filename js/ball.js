@@ -1,4 +1,5 @@
 var Entity = require('./entity')
+var stage = require('./stage')
 
 module.exports = class Ball extends Entity {
 
@@ -19,7 +20,9 @@ module.exports = class Ball extends Entity {
     if (paddle.isHitTop(this)) {
 
       // ball go up
-      this.vY = -this.vY
+      if (this.vY > 0) {
+        this.vY = -this.vY
+      }
       this.vX = 0
 
       // ball always above paddle
@@ -27,7 +30,7 @@ module.exports = class Ball extends Entity {
 
       // load ball with spin if there
       this.spin = mouse.vX > 10 ? 10 : mouse.vX
-      this.spinDuration = 750
+      this.spinDuration = 500
     }
   }
 
@@ -39,7 +42,7 @@ module.exports = class Ball extends Entity {
     this.vX = -this.vX
   }
 
-  hitStage(stage) {
+  hitStage() {
 
     // if this strikes the vertical walls, invert the 
     // x-velocity vector of this
@@ -74,12 +77,10 @@ module.exports = class Ball extends Entity {
       var spinPositive = this.spin < 0 ? -this.spin : this.spin
       var spinAmount = .005 * spinPositive
       this.spinDuration -= timeDelta
-      if (this.spinDuration < 500) {
-        if (this.spin > 0) {
-          this.vX += spinAmount
-        } else {
-          this.vX -= spinAmount
-        }
+      if (this.spin > 0) {
+        this.vX += spinAmount
+      } else {
+        this.vX -= spinAmount
       }
     }
 

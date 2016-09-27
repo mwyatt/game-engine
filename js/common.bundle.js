@@ -1,8 +1,8 @@
 var keysDown = {}
-var stage = require('./stage')
+var core = require('./core')
 
-stage.init()
-var canvasElement = stage.getCanvasElement()
+core.init()
+var canvasElement = core.getCanvasElement()
 
 addEventListener("keydown", function (e) {
   keysDown[e.keyCode] = true
@@ -14,4 +14,4 @@ addEventListener("keyup", function (e) {
 
 document.body.appendChild(canvasElement)
 
-stage.loop()
+core.loop()

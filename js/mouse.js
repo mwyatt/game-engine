@@ -1,6 +1,5 @@
 var Mouse = {
   x: 0,
-  y: 0,
   vX: 0,
   vXHistory: 0
 }
