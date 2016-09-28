@@ -31,6 +31,11 @@ module.exports = class Entity {
     return this.getLeft() <= entity.getRight() && this.getRight() >= entity.getLeft()
   }
 
+
+  /**
+   * could return array describing where it was hit {top: bool, right: bool}
+   * or [bool, bool, bool, bool]
+   */
   isHit(entity) {
     if (this.isHitTop(entity)) {
       return this.hitTop

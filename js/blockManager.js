@@ -1,5 +1,5 @@
 var Block = require('./block')
-var stage = require('./stage')
+var core = require('./core')
 var BlockManager = {}
 
 BlockManager.getLevel1Blocks = function() {
@@ -12,7 +12,7 @@ BlockManager.getLevel1Blocks = function() {
   var x = xDefault
   while (index < 100) {
     index++
-    if ((x + exampleBlock.w) >= stage.w) {
+    if ((x + exampleBlock.w) >= core.w) {
       y += exampleBlock.h
       x = xDefault
     }

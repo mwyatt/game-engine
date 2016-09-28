@@ -1,5 +1,6 @@
 var Entity = require('./entity')
-var stage = require('./stage')
+var core = require('./core')
+var mouse = require('./mouse')
 
 module.exports = class Ball extends Entity {
 
@@ -18,7 +19,7 @@ module.exports = class Ball extends Entity {
     this.spinDuration
   }
 
-  contactPaddle(paddle, mouse) {
+  contactPaddle(paddle) {
     var hitResult = paddle.isHit(this)
     if (hitResult == this.hitTop || hitResult == this.hitLeft || hitResult == this.hitRight) {
 
@@ -33,8 +34,9 @@ module.exports = class Ball extends Entity {
       }
 
       // max spin 
-      this.spin = mouse.vX > 10 ? 10 : mouse.vX
-      this.spin = mouse.vX < -10 && mouse.vX < 0 ? -10 : this.spin
+      var mouseVX = mouse.getVX()
+      this.spin = mouseVX > 10 ? 10 : mouseVX
+      this.spin = mouseVX < -10 && mouseVX < 0 ? -10 : this.spin
 
       var spinPositive = this.spin < 0 ? -this.spin : this.spin
 
@@ -58,25 +60,25 @@ module.exports = class Ball extends Entity {
   hitStage() {
 
     // ball outside of play area?
-    if (this.getRight() > stage.w) {
-      this.x = stage.w - this.w
+    if (this.getRight() > core.w) {
+      this.x = core.w - this.w
     } else if (this.getLeft() < 0) {
       this.x = 0
     } else if (this.getTop() < 0) {
       this.y = 0
-    } else if (this.getBottom() > stage.h) {
-      this.y = stage.h - this.w
+    } else if (this.getBottom() > core.h) {
+      this.y = core.h - this.w
     }
 
     // if this strikes the vertical walls
-    if (this.getRight() == stage.w) {
+    if (this.getRight() == core.w) {
       this.vX = -this.vX
     } else if (this.getLeft() == 0) {
       this.vX = -this.vX
     }
 
     // if this strikes the horizontal walls
-    if (this.getBottom() == stage.h) {
+    if (this.getBottom() == core.h) {
       this.vY = -this.vY
     } else if (this.getTop() == 0) {
       this.vY = -this.vY
@@ -102,7 +104,7 @@ module.exports = class Ball extends Entity {
       this.vX = this.vMaxNegative
     }
 
-    this.x += parseInt(this.vX * timeDelta)
-    this.y += parseInt(this.vY * timeDelta)
+    this.x += Math.round(this.vX * timeDelta)
+    this.y += Math.round(this.vY * timeDelta)
   }
 }

@@ -1,5 +1,6 @@
 var Entity = require('./entity')
-var stage = require('./stage')
+var core = require('./core')
+var mouse = require('./mouse')
 
 module.exports = class Paddle extends Entity {
 
@@ -8,12 +9,13 @@ module.exports = class Paddle extends Entity {
     this.w = 120
     this.h = 14
     this.x = 0
-    this.y = stage.h 
+    this.y = core.h 
   }
 
-  mouseMove(mouse) {
-    if (mouse.x) {
-      this.x = mouse.x
+  mouseMove() {
+    var mouseX = mouse.getX()
+    if (mouseX) {
+      this.x = mouseX
     }
   }
 }
