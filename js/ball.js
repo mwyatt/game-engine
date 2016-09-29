@@ -12,8 +12,8 @@ module.exports = class Ball extends Entity {
     this.x = 0
     this.y = 0
     this.vX = 0
-    this.vMaxPositive = .4
-    this.vMaxNegative = -.4
+    this.vMaxPositive = .35
+    this.vMaxNegative = -.35
     this.vY = this.vMaxNegative
     this.spin = 0
     this.spinDuration
@@ -85,7 +85,8 @@ module.exports = class Ball extends Entity {
     }
   }
 
-  moveVelocity(timeDelta) {
+  moveVelocity() {
+    var timeDelta = core.getTimeDelta()
     if (this.spinDuration > 0) {
       this.spinDuration -= timeDelta
       var spinPositive = this.spin < 0 ? -this.spin : this.spin

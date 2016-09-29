@@ -1,3 +1,4 @@
+var Stage = {}
 var core = require('./core')
 var keyCodes = require('./keyCodes')
 var Ball = require('./ball')
@@ -7,24 +8,16 @@ var blockManager = require('./blockManager')
 var ball = new Ball()
 var paddle = new Paddle()
 var timeThen = Date.now()
-var blocks = blockManager.getLevel1Blocks()
-var canvasElement
-var canvasContext
+var blocks
+var canvasCtx
 var timeNow
-var timeDelta
-var timeModified
-var Stage = {}
 var score = 0
 var fps = 0
 var showmenu = true
 var buttonNewGame
 
-Stage.setCanvasElement = function(element) {
-  canvasContext = element.getContext('2d')
-  canvasElement = element
-}
-
 Stage.loadMenu = function() {
+  canvasCtx = core.getCanvasCtx()
   buttonNewGame = new MenuButton('New Game')
   buttonNewGame.selected = true
   loop()
@@ -36,12 +29,12 @@ function loadLevel() {
   ball.y = core.h / 2
   paddle.x = (core.w / 2) + (paddle.w / 2)
   paddle.y = core.h - 30
+  blocks = blockManager.getLevel1Blocks()
 }
 
 function loop() {
   timeNow = Date.now()
-  timeDelta = timeNow - timeThen
-  timeModified = timeDelta
+  core.setTimeDelta(timeNow - timeThen)
   update()
   render()
   timeThen = timeNow
@@ -76,7 +69,7 @@ function updateLevel() {
   paddle.mouseMove()
   ball.hitStage()
   ball.contactPaddle(paddle)
-  ball.moveVelocity(timeDelta)
+  ball.moveVelocity()
   var hitThisFrame
   blocks.forEach(function(block) {
     if (!block.isDestroyed()) {
@@ -96,47 +89,40 @@ function updateLevel() {
 }
 
 function renderCanvas() {
-  canvasContext.clearRect(0, 0, canvasElement.width, canvasElement.height)
-  canvasContext.fillStyle = 'rgba(0, 0, 0, 0.1)'
-  canvasContext.fillRect(0, 0, canvasElement.width, canvasElement.height)
+  canvasCtx.clearRect(0, 0, core.w, core.h)
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.1)'
+  canvasCtx.fillRect(0, 0, core.w, core.h)
 }
 
 function renderMenu() {
-  canvasContext.fillStyle = buttonNewGame.selected ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.2)'
-  canvasContext.fillRect(buttonNewGame.x, buttonNewGame.y, buttonNewGame.w, buttonNewGame.h)
-  canvasContext.font = "21px Arial";
-  canvasContext.fillStyle = "rgba(0, 0, 0, 0.5)";
-  canvasContext.fillText(buttonNewGame.text, 30, 30);
+  canvasCtx.fillStyle = buttonNewGame.selected ? 'rgba(0, 0, 0, 0.4)' : 'rgba(0, 0, 0, 0.2)'
+  canvasCtx.fillRect(buttonNewGame.x, buttonNewGame.y, buttonNewGame.w, buttonNewGame.h)
+  canvasCtx.font = "21px Arial";
+  canvasCtx.fillStyle = "rgba(0, 0, 0, 0.5)";
+  canvasCtx.fillText(buttonNewGame.text, 30, 30);
 }
 
 function renderLevel() {
 
   // blocks
   blocks.forEach(function(block) {
-    if (block.isDestroyed()) {
-      return 
-    } else if (block.lives == 2) {
-      canvasContext.fillStyle = '#333'
-    } else if (block.lives == 1) {
-      canvasContext.fillStyle = 'rgba(0, 0, 0, 0.2)'
-    }
-    canvasContext.fillRect(block.x, block.y, block.w, block.h)
+    block.render()
   })
 
   // paddle
-  canvasContext.fillStyle = 'rgba(0, 0, 0, 0.3)'
-  canvasContext.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+  canvasCtx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
 
   // ball
-  canvasContext.fillStyle = 'rgba(0, 0, 0, 0.3)'
-  canvasContext.beginPath()
-  canvasContext.arc(ball.x, ball.y, ball.w / 2, 0, Math.PI * 2, true)
-  canvasContext.fill()
+  canvasCtx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+  canvasCtx.beginPath()
+  canvasCtx.arc(ball.x + (ball.w / 2), ball.y + (ball.h / 2), ball.w / 2, 0, Math.PI * 2, true)
+  canvasCtx.fill()
 
   // score
-  canvasContext.font = "21px Arial";
-  canvasContext.fillStyle = "rgba(0, 0, 0, 0.3)";
-  canvasContext.fillText(score, 20, core.h - 20);
+  canvasCtx.font = "21px Arial";
+  canvasCtx.fillStyle = "rgba(0, 0, 0, 0.3)";
+  canvasCtx.fillText(score, 20, core.h - 20);
 }
 
 module.exports = Stage

@@ -10,6 +10,12 @@ module.exports = class Paddle extends Entity {
     this.h = 14
     this.x = 0
     this.y = core.h 
+    this.animationBounce = {
+      length: 300,
+      iteration: 0,
+      maxIteration: 1,
+      progress: 0
+    }
   }
 
   mouseMove() {
@@ -17,5 +23,9 @@ module.exports = class Paddle extends Entity {
     if (mouseX) {
       this.x = mouseX
     }
+  }
+
+  render() {
+    
   }
 }

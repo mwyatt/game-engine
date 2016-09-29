@@ -9,7 +9,7 @@ canvasElement.style.cursor = 'none'
 canvasElement.width = core.w
 canvasElement.height = core.h
 document.body.appendChild(canvasElement)
-stage.setCanvasElement(canvasElement)
+core.setCanvasAndCtx(canvasElement)
 
 addEventListener('keydown', function (e) {
   core.setKeyDown(e.keyCode)
