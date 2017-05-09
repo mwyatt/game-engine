@@ -1,84 +1,171 @@
+var stage = {
+  canvasEl: '',
+  canvasRect: '',
+  ctx: '',
+  timeDelta: 0,
+  w: 320,
+  h: 320,
+  gutter: 20,
+}
+var keysDown = []
 var hitTest = hitTest
 var ballFactory = ballFactory
-var stageGutter = 20
+var mouseFactory = mouseFactory
+var blockFactory = blockFactory
+var mouse = new mouseFactory()
 var log = console.log
 var timeThen = Date.now()
 var timeNow
-var timeDelta
-var stageWidth = 640
-var stageHeight = 480
-var ballG = new PIXI.Graphics();
-var renderer = new PIXI.WebGLRenderer(stageWidth, stageHeight, {backgroundColor : 0xefefef});
-document.body.appendChild(renderer.view);
+var ball = new ballFactory()
+var balls = [ball]
+var blocks = []
+var log = console.log
 
-var stage = new PIXI.Container();
-var ballO = new ballFactory()
+setupStage()
+setupEvents()
+setupBalls()
+setupBlocks()
+loop()
 
-renderGame()
-gameLoop()
-
-function gameLoop() {
-  requestAnimationFrame(gameLoop)
-
-  timeNow = Date.now()
-  timeDelta = timeNow - timeThen
-  timeThen = timeNow
-
-  update()
-
-  //Render the stage to see the animation
-  renderer.render(stage);
+function setupStage() {
+  stage.canvasEl = document.createElement('canvas')
+  stage.canvasEl.style.cursor = 'none'
+  stage.canvasEl.width = stage.w
+  stage.canvasEl.height = stage.h
+  stage.canvasRect = stage.canvasEl.getBoundingClientRect()
+  document.body.appendChild(stage.canvasEl)
+  stage.ctx = stage.canvasEl.getContext('2d')
 }
 
-//Start the game loop
+function setupEvents() {
+  addEventListener('keydown', function (e) {
+    keysDown[e.keyCode] = true
+  }, false)
 
-function renderGame() {
-  renderBlocks()
+  addEventListener('keyup', function (e) {
+    delete keysDown[e.keyCode]
+  }, false)
 
-  var quarterStageH = ((stageHeight / 2) / 2)
-  ballO.x = (stageWidth / 2) - (ballO.w / 2)
-  ballO.y = (quarterStageH * 3) -(ballO.h / 2)
-  console.log(ballO, (stageWidth / 2) - (ballO.w / 2), (quarterStageH * 3) -(ballO.h / 2))
-  ballG.beginFill(0x666666);
-  ballG.drawRect(ballO.x, ballO.y, ballO.w, ballO.h);
-  ballG.endFill();
-  stage.addChild(ballG);
+  stage.canvasEl.addEventListener('mousemove', function(e) {
+    mouse.setX(e.clientX - stage.canvasRect.left)
+    mouse.storeVelocity()
+  }, false)
 }
 
-function update() {
-  ballO.moveVelocity(timeDelta)
-}
-
-function renderBlocks() {
-  var blockTemplate = getBlockTemplate()
-  var hSpace = stageWidth - (stageGutter * 2)
-  var vSpace = stageHeight / 2
-  var colTotal = parseInt(hSpace / blockTemplate.w)
-  var rowTotal = parseInt(vSpace / blockTemplate.h)
-  for (row = 1; row <= rowTotal; row++) {
-    for (col = 1; col <= colTotal; col++) {
-      renderBlock(row, col)
-    }
+function setupBalls() {
+  for (var b = 0; b < balls.length; b++) {
+    var quarterStageH = ((stage.h / 2) / 2)
+    ball.x = (stage.w / 2) - (ball.w / 2)
+    ball.y = (quarterStageH * 3) -(ball.h / 2)
   }
 }
 
-function renderBlock(row, col) {
-  var blockT = getBlockTemplate()
-  blockT.x = (col * blockT.w)
-  blockT.y = (row * blockT.h)
-  var blockG = new PIXI.Graphics();
-  blockG.beginFill(0xcccccc);
-  blockG.drawRect(blockT.x, blockT.y, blockT.w, blockT.h);
-  blockG.endFill();
-  stage.addChild(blockG);
+function loop() {
+  timeNow = Date.now()
+  stage.timeDelta = timeNow - timeThen
+  update()
+  render()
+  timeThen = timeNow
+  window.requestAnimationFrame(loop)
 }
 
-// will this be a unique object?
-function getBlockTemplate() {
-  return {
-    x: 0,
-    y: 0,
-    w: 20,
-    h: 20,
+function update() {
+  var block
+  var ball
+  var hitBlockThisFrame
+  var remainingBlocks = []
+  var hitCount = 0
+
+  // temp
+  for (var b = 0; b < balls.length; b++) {
+    ball = balls[b]
+  }
+
+  // work out where the ball is in relation to all other blocks
+  // narrow down which ones could possibly be hit, using the grid they are placed?
+
+  // currently checks only one ball
+  // can only hit one block per frame
+  for (var b = 0; b < blocks.length; b++) {
+    var hit
+    if (!hitBlockThisFrame) {
+      block = blocks[b]
+      var hitTop = hitTest.isHitTop(ball, block)
+      var hitBottom = hitTest.isHitBottom(ball, block)
+      var hitLeft = hitTest.isHitLeft(ball, block)
+      var hitRight = hitTest.isHitRight(ball, block)
+      hit = hitTop || hitBottom || hitLeft || hitRight
+      if (hit) {
+        hitCount++
+        hitBlockThisFrame = true
+        if (hitTop || hitBottom) {
+            ball.bounceVertical()
+        } else {
+            ball.bounceHorisontal()
+        } 
+      }
+    } else {
+      hit = false
+    }
+    if (!hit) {
+      remainingBlocks.push(block)
+    }
+  }
+  log(hitCount, remainingBlocks.length)
+  blocks = remainingBlocks
+  
+  for (var b = 0; b < balls.length; b++) {
+    ball = balls[b]
+    ball.moveVelocity(stage.timeDelta)
+    ball.hitStage(stage)
+  }
+}
+
+function render() {
+  var ball
+
+  // clear
+  stage.ctx.clearRect(0, 0, stage.w, stage.h)
+  stage.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
+  stage.ctx.fillRect(0, 0, stage.w, stage.h)
+
+  // paddle
+  // stage.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)'
+  // stage.ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
+
+  // balls
+  for (var b = 0; b < balls.length; b++) {
+    ball = balls[b]
+    stage.ctx.fillStyle = '#666'
+    stage.ctx.beginPath()
+    stage.ctx.arc(ball.x + (ball.w / 2), ball.y + (ball.h / 2), ball.w / 2, 0, Math.PI * 2, true)
+    stage.ctx.fill()
+  }
+
+  // blocks
+  for (var b = 0; b < blocks.length; b++) {
+    blocks[b].render(stage)
+  }
+
+  // score
+  // stage.ctx.font = "21px Arial";
+  // stage.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+  // stage.ctx.fillText(score, 20, core.h - 20);
+}
+
+
+function setupBlocks() {
+  var hSpace = stage.w - (stage.gutter * 2)
+  var vSpace = stage.h / 2
+  var blockTemp = new blockFactory()
+  var colTotal = parseInt(hSpace / blockTemp.w)
+  var rowTotal = parseInt(vSpace / blockTemp.h)
+  for (row = 1; row <= rowTotal; row++) {
+    for (col = 1; col <= colTotal; col++) {
+      var block = new blockFactory()
+      block.x = (col * block.w)
+      block.y = (row * block.h)
+      blocks.push(block)
+    }
   }
 }

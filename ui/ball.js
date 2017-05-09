@@ -10,9 +10,10 @@ var ballFactory = function() {
   this.radius = this.w / 2
   this.x = 0
   this.y = 0
-  this.vX = -.1
-  this.vY = -.1
+  this.vX = this.vMaxNegative / 2
+  this.vY = this.vMaxNegative / 2
   this.spin = 0
+  this.sprite
 
   this.contactPaddle = function(paddle) {
     var hitresult = hitTest.ishit(paddle, this)
@@ -52,28 +53,28 @@ var ballFactory = function() {
     this.vX = -this.vX
   }
 
-  this.hitStage = function() {
+  this.hitStage = function(stage) {
 
     // ball outside of play area?
-    if (hitTest.getRight(this) > stageWidth) {
-      this.x = stageWidth - this.w
+    if (hitTest.getRight(this) > stage.w) {
+      this.x = stage.w - this.w
     } else if (hitTest.getLeft(this) < 0) {
       this.x = 0
     } else if (hitTest.getTop(this) < 0) {
       this.y = 0
-    } else if (hitTest.getBottom(this) > stageHeight) {
-      this.y = stageHeight - this.w
+    } else if (hitTest.getBottom(this) > stage.h) {
+      this.y = stage.h - this.w
     }
 
     // if this strikes the vertical walls
-    if (hitTest.getRight(this) == stageWidth) {
+    if (hitTest.getRight(this) == stage.w) {
       this.vX = -this.vX
     } else if (hitTest.getLeft(this) == 0) {
       this.vX = -this.vX
     }
 
     // if this strikes the horizontal walls
-    if (hitTest.getBottom(this) == stageHeight) {
+    if (hitTest.getBottom(this) == stage.h) {
       this.vY = -this.vY
     } else if (hitTest.getTop(this) == 0) {
       this.vY = -this.vY
@@ -101,8 +102,5 @@ var ballFactory = function() {
 
     this.x += Math.round(this.vX * timeDelta)
     this.y += Math.round(this.vY * timeDelta)
-    ballG.x = this.x
-    ballG.y = this.y
-    console.log(ballG.x, ballG.y)
   }
 }
