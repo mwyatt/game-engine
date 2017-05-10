@@ -20,6 +20,7 @@ var ball = new ballFactory()
 var balls = [ball]
 var blocks = []
 var log = console.log
+var displayText = ''
 
 setupStage()
 setupEvents()
@@ -47,7 +48,8 @@ function setupEvents() {
   }, false)
 
   stage.canvasEl.addEventListener('mousemove', function(e) {
-    mouse.setX(e.clientX - stage.canvasRect.left)
+    mouse.x = e.clientX - stage.canvasRect.left
+    mouse.y = e.clientY - stage.canvasRect.bottom
     mouse.storeVelocity()
   }, false)
 }
@@ -70,55 +72,81 @@ function loop() {
 }
 
 function update() {
-  var block
   var ball
-  var hitBlockThisFrame
-  var remainingBlocks = []
-  var hitCount = 0
+  var block
 
   // temp
   for (var b = 0; b < balls.length; b++) {
     ball = balls[b]
   }
 
+  for (var b = 0; b < blocks.length; b++) {
+    block = blocks[b]
+  }
+
+  ball.x = mouse.x
+  ball.y = mouse.y
+
+  if (hitTest.isHitTop(ball, block)) {
+    displayText = 'Top'
+    block.color = '#333'
+  } else if (hitTest.isHitRight(ball, block)) {
+    displayText = 'Right'
+    block.color = '#333'
+  } else if (hitTest.isHitBottom(ball, block)) {
+    displayText = 'Bottom'
+    block.color = '#333'
+  } else if (hitTest.isHitLeft(ball, block)) {
+    displayText = 'Left'
+    block.color = '#333'
+  } else {
+    displayText = 'nothing hit'
+    block.color = '#666'
+  }
+
+  // var block
+  // var hitBlockThisFrame
+  // var remainingBlocks = []
+  // var hitCount = 0
+
   // work out where the ball is in relation to all other blocks
   // narrow down which ones could possibly be hit, using the grid they are placed?
 
   // currently checks only one ball
   // can only hit one block per frame
-  for (var b = 0; b < blocks.length; b++) {
-    var hit
-    if (!hitBlockThisFrame) {
-      block = blocks[b]
-      var hitTop = hitTest.isHitTop(ball, block)
-      var hitBottom = hitTest.isHitBottom(ball, block)
-      var hitLeft = hitTest.isHitLeft(ball, block)
-      var hitRight = hitTest.isHitRight(ball, block)
-      hit = hitTop || hitBottom || hitLeft || hitRight
-      if (hit) {
-        hitCount++
-        hitBlockThisFrame = true
-        if (hitTop || hitBottom) {
-            ball.bounceVertical()
-        } else {
-            ball.bounceHorisontal()
-        } 
-      }
-    } else {
-      hit = false
-    }
-    if (!hit) {
-      remainingBlocks.push(block)
-    }
-  }
-  log(hitCount, remainingBlocks.length)
-  blocks = remainingBlocks
+  // for (var b = 0; b < blocks.length; b++) {
+  //   var hit
+  //   if (!hitBlockThisFrame) {
+  //     block = blocks[b]
+  //     var hitTop = hitTest.isHitTop(ball, block)
+  //     var hitBottom = hitTest.isHitBottom(ball, block)
+  //     var hitLeft = hitTest.isHitLeft(ball, block)
+  //     var hitRight = hitTest.isHitRight(ball, block)
+  //     hit = hitTop || hitBottom || hitLeft || hitRight
+  //     if (hit) {
+  //       hitCount++
+  //       hitBlockThisFrame = true
+  //       if (hitTop || hitBottom) {
+  //           ball.bounceVertical()
+  //       } else {
+  //           ball.bounceHorisontal()
+  //       } 
+  //     }
+  //   } else {
+  //     hit = false
+  //   }
+  //   if (!hit) {
+  //     remainingBlocks.push(block)
+  //   }
+  // }
+  // log(hitCount, remainingBlocks.length)
+  // blocks = remainingBlocks
   
-  for (var b = 0; b < balls.length; b++) {
-    ball = balls[b]
-    ball.moveVelocity(stage.timeDelta)
-    ball.hitStage(stage)
-  }
+  // for (var b = 0; b < balls.length; b++) {
+  //   ball = balls[b]
+  //   ball.moveVelocity(stage.timeDelta)
+  //   ball.hitStage(stage)
+  // }
 }
 
 function render() {
@@ -148,9 +176,9 @@ function render() {
   }
 
   // score
-  // stage.ctx.font = "21px Arial";
-  // stage.ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-  // stage.ctx.fillText(score, 20, core.h - 20);
+  stage.ctx.font = "21px Arial";
+  stage.ctx.fillStyle = "#666";
+  stage.ctx.fillText(displayText, 20, 40);
 }
 
 
@@ -160,6 +188,13 @@ function setupBlocks() {
   var blockTemp = new blockFactory()
   var colTotal = parseInt(hSpace / blockTemp.w)
   var rowTotal = parseInt(vSpace / blockTemp.h)
+
+  // temp
+  var block = new blockFactory()
+  block.x = hSpace / 2
+  block.y = vSpace / 2
+  return blocks.push(block)
+
   for (row = 1; row <= rowTotal; row++) {
     for (col = 1; col <= colTotal; col++) {
       var block = new blockFactory()

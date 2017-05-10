@@ -5,8 +5,8 @@ var ballFactory = function() {
   this.vMaxNegative = -.35
   this.spinDuration = 0
 
-  this.w = 14
-  this.h = 14
+  this.w = 50
+  this.h = 50
   this.radius = this.w / 2
   this.x = 0
   this.y = 0

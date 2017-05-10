@@ -1,9 +1,10 @@
 var blockFactory = function() {
   this.x = 0
   this.y = 0
-  this.w = 20
-  this.h = 20
+  this.w = 50
+  this.h = 50
   this.lives = 1
+  this.color = '#666'
   this.animationDestroy = {
     length: 200,
     iteration: 0,
@@ -37,7 +38,7 @@ var blockFactory = function() {
     } else if (this.lives == 2) {
       stage.ctx.fillStyle = '#333'
     } else if (this.lives == 1) {
-      stage.ctx.fillStyle = '#ccc'
+      stage.ctx.fillStyle = this.color
     }
     stage.ctx.fillRect(this.x, this.y, this.w, this.h)
   }
