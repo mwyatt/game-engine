@@ -15,6 +15,13 @@ var ballFactory = function() {
   this.spin = 0
   this.zone
 
+  this.render = function(stage) {
+    stage.ctx.fillStyle = '#666'
+    stage.ctx.beginPath()
+    stage.ctx.arc(this.x + (this.w / 2), this.y + (this.h / 2), this.w / 2, 0, Math.PI * 2, true)
+    stage.ctx.fill()
+  }
+
   this.hitPaddle = function(paddle) {
     var result = hitTest.isHit(paddle, this)
     if (result) {

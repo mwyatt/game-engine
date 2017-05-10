@@ -16,4 +16,9 @@ var paddleFactory = function() {
       this.x = mouseX - (this.w / 2)
     }
   }
+
+  this.render = function(stage) {
+    stage.ctx.fillStyle = '#ccc'
+    stage.ctx.fillRect(this.x, this.y, this.w, this.h)
+  }
 }

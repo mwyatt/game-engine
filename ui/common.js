@@ -18,6 +18,7 @@ var mouse = new mouseFactory()
 var timeThen = Date.now()
 var timeNow
 var hitZones = []
+var scenery = []
 var balls = [
   new ballFactory(),
   new ballFactory(),
@@ -33,11 +34,16 @@ var paddle = new paddleFactory()
 
 setupStage()
 setupEvents()
-setupPaddle()
-setupBalls()
-setupBlocks()
-setupZones()
+// setupSceneMenu()
+setupSceneLevel()
 loop()
+
+function setupSceneLevel() {
+  setupPaddle()
+  setupBalls()
+  setupBlocks()
+  setupZones()
+}
 
 function setupStage() {
   stage.canvasEl = document.createElement('canvas')
@@ -68,6 +74,9 @@ function setupZones() {
         w: divisionW,
         h: divisionH,
         blocks: [],
+        render: function() {
+          stage.ctx.fillRect(this.x, this.y, 5, 5)
+        }
       })
     }
   }
@@ -110,6 +119,7 @@ function setupBalls() {
     // ball.vY = parseFloat(Math.random().toFixed(2))
     ball.vX = .2
     ball.vY = .2
+    scenery.push(ball)
   }
 }
 
@@ -118,6 +128,7 @@ function setupPaddle() {
     var vpos = (quarterStageH * 3) + (quarterStageH / 2) - (paddle.h / 2)
     paddle.x = (stage.w / 2) - (paddle.w / 2)
     paddle.y = vpos
+    scenery.push(paddle)
 }
 
 function loop() {
@@ -189,8 +200,8 @@ function updateBlocks() {
 }
 
 function update() {
-  paddle.mouseMove(mouse)
   updateFps()
+  paddle.mouseMove(mouse)
   updateBalls()
   updateBlocks()
 
@@ -199,7 +210,6 @@ function update() {
 }
 
 function render() {
-  var ball
 
   // clear
   stage.ctx.clearRect(0, 0, stage.w, stage.h)
@@ -210,34 +220,13 @@ function render() {
   stage.ctx.font = "12px Arial";
   stage.ctx.fillStyle = "#ccc";
   stage.ctx.fillText(fps, 30, 30);
-
-  for (var z = 0; z < hitZones.length; z++) {
-    stage.ctx.fillRect(hitZones[z].x, hitZones[z].y, 5, 5)
+  
+  for (var s = 0; s < scenery.length; s++) {
+    scenery[s].render(stage)
   }
 
-  // paddle
-  stage.ctx.fillStyle = '#ccc'
-  stage.ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h)
-
-  // balls
-  for (var b = 0; b < balls.length; b++) {
-    ball = balls[b]
-    // stage.ctx.fillStyle = '#ccc'
-    // stage.ctx.fillRect(ball.x, ball.y, ball.w, ball.h)
-    stage.ctx.fillStyle = '#666'
-    stage.ctx.beginPath()
-    stage.ctx.arc(ball.x + (ball.w / 2), ball.y + (ball.h / 2), ball.w / 2, 0, Math.PI * 2, true)
-    stage.ctx.fill()
-  }
-
-  // blocks
-  for (var b = 0; b < blocks.length; b++) {
-    blocks[b].render(stage)
-  }
-
-  // score
+  // score?
 }
-
 
 function setupBlocks() {
   var hSpace = stage.w - (stage.gutter * 2)
@@ -258,6 +247,7 @@ function setupBlocks() {
       block.x = (col * block.w)
       block.y = (row * block.h)
       blocks.push(block)
+      scenery.push(block)
     }
   }
 }
