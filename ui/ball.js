@@ -5,43 +5,41 @@ var ballFactory = function() {
   this.vMaxNegative = -.35
   this.spinDuration = 0
 
-  this.w = 50
-  this.h = 50
+  this.w = 12
+  this.h = 12
   this.radius = this.w / 2
   this.x = 0
   this.y = 0
-  this.vX = this.vMaxNegative / 2
-  this.vY = this.vMaxNegative / 2
+  this.vX = 0
+  this.vY = 0
   this.spin = 0
-  this.sprite
+  this.zone
 
-  this.contactPaddle = function(paddle) {
-    var hitresult = hitTest.ishit(paddle, this)
-    if (hitresult == this.hittop || hitresult == this.hitleft || hitresult == this.hitright) {
-
-      // ball go up
-      if (this.vy > 0) {
-        this.vy = -this.vy
+  this.hitPaddle = function(paddle) {
+    var result = hitTest.isHit(paddle, this)
+    if (result) {
+      var correctionPos = hitTest.getOutsidePos(paddle, this)
+      this.x = correctionPos.x
+      this.y = correctionPos.y
+      if (correctionPos.direction == 'v') {
+        ball.bounceVertical()
+      } else {
+        ball.bounceHorisontal()
       }
-
-      // ball always above paddle
-      if (this.getbottom() > paddle.gettop()) {
-        this.y = paddle.y - paddle.h
-      }
-
+      
       // max spin 
-      var mousevx = mouse.getvx()
-      this.spin = mousevx > 10 ? 10 : mousevx
-      this.spin = mousevx < -10 && mousevx < 0 ? -10 : this.spin
+      // var mousevx = mouse.getvx()
+      // this.spin = mousevx > 10 ? 10 : mousevx
+      // this.spin = mousevx < -10 && mousevx < 0 ? -10 : this.spin
 
-      var spinpositive = this.spin < 0 ? -this.spin : this.spin
+      // var spinpositive = this.spin < 0 ? -this.spin : this.spin
 
-      // reset vx if trying to spin
-      if (spinpositive > 2) {
-        this.vx = 0
-      }
+      // // reset vx if trying to spin
+      // if (spinpositive > 2) {
+      //   this.vx = 0
+      // }
 
-      this.spinduration = (spinpositive / 2) * 100
+      // this.spinduration = (spinpositive / 2) * 100
     }
   }
 

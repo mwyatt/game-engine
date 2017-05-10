@@ -1,8 +1,8 @@
 var blockFactory = function() {
   this.x = 0
   this.y = 0
-  this.w = 50
-  this.h = 50
+  this.w = 16
+  this.h = 16
   this.lives = 1
   this.color = '#666'
   this.animationDestroy = {
