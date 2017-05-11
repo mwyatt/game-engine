@@ -10,6 +10,10 @@ var paddleFactory = function() {
     progress: 0
   }
 
+  this.update = function(stage) {
+    this.mouseMove(stage.mouse)
+  },
+
   this.mouseMove = function(mouse) {
     var mouseX = mouse.x
     if (mouseX) {

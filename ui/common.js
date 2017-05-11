@@ -1,48 +1,115 @@
+var ballFactory = ballFactory
+var buttonFactory = buttonFactory
+var mouseFactory = mouseFactory
+var blockFactory = blockFactory
+var paddleFactory = paddleFactory
 var stage = {
   canvasEl: '',
   canvasRect: '',
   ctx: '',
-  timeDelta: 0,
-  timePassed: 0,
-  w: 320,
+  time: {delta: 0, passed: 0},
+  w: 640,
   h: 480,
   gutter: 20,
+  mouse: new mouseFactory(),
+  keysDown: {},
+  hitZones: [],
+
+  // does not feel good being here
+  balls: [],
+  paddle: '',
 }
-var keysDown = []
 var hitTest = hitTest
-var ballFactory = ballFactory
-var mouseFactory = mouseFactory
-var blockFactory = blockFactory
-var paddleFactory = paddleFactory
-var mouse = new mouseFactory()
 var timeThen = Date.now()
 var timeNow
-var hitZones = []
 var scenery = []
-var balls = [
-  new ballFactory(),
-  new ballFactory(),
-  new ballFactory(),
-  new ballFactory(),
-  new ballFactory(),
-  new ballFactory(),
-]
 var blocks = []
 var frameInfo = []
 var fps = 0
-var paddle = new paddleFactory()
 
 setupStage()
 setupEvents()
-// setupSceneMenu()
-setupSceneLevel()
+setupSceneMenu()
+// setupSceneLevel()
 loop()
+
+function clearScenery() {
+  scenery.splice(0, scenery.length)
+}
+
+function setupSceneMenu() {
+  var buttonPlay = new buttonFactory()
+  var buttonX = stage.w / 2 - buttonPlay.w / 2
+  buttonPlay.x = buttonX
+  buttonPlay.y = 20
+  buttonPlay.text = 'Option1'
+  buttonPlay.action = function() {
+    clearScenery()
+    setupSceneLevel()
+  }
+
+  var buttonOptions = new buttonFactory()
+  buttonOptions.x = buttonX
+  buttonOptions.y = 20 + 10 + buttonPlay.h
+  buttonOptions.text = 'Option2'
+  buttonOptions.action = function() {
+    clearScenery()
+    setupSceneOptions()
+  }
+
+  var buttonGroup = {
+    buttons: [buttonPlay, buttonOptions],
+    selectedIndex: 0,
+    navCodes: [38, 40, 13],
+    keyTimesDepressedCache: {
+      38: 0,
+      40: 0,
+      13: 0,
+    },
+    render: function() {
+      for (var b = 0; b < this.buttons.length; b++) {
+        this.buttons[b].render()
+      }
+    },
+    update: function() {
+      for (var b = 0; b < this.buttons.length; b++) {
+        this.buttons[b].selected = 0
+      }
+      this.buttons[this.selectedIndex].selected = 1
+      var navCode
+      for (var b = 0; b < this.navCodes.length; b++) {
+        navCode = this.navCodes[b]
+        if (navCode in stage.keysDown) {
+          if (this.keyTimesDepressedCache[navCode] != stage.keysDown[navCode].time.depressed) {
+            if (navCode == 40) {
+              this.selectedIndex ++
+            } else if (navCode == 38) {
+              this.selectedIndex --
+            }
+            if (this.selectedIndex < 0) {
+              this.selectedIndex = 0
+            }
+            if (this.selectedIndex > this.buttons.length - 1) {
+              this.selectedIndex = this.buttons.length - 1
+            }
+            if (navCode == 13) {
+              this.buttons[this.selectedIndex].action()
+            }
+            this.keyTimesDepressedCache[navCode] = stage.keysDown[navCode].time.depressed
+          }
+        }
+      }
+    },
+  }
+  scenery.push(buttonGroup)
+}
 
 function setupSceneLevel() {
   setupPaddle()
   setupBalls()
   setupBlocks()
   setupZones()
+  // score?
 }
 
 function setupStage() {
@@ -56,60 +123,66 @@ function setupStage() {
 }
 
 function setupZones() {
-  // divide stage into segments
-// store things into segments based on position
-// then when ball is in segment test things inside it
+var division = 5
+var divisionW = stage.w / division
+var divisionH = stage.h / division
+var block
+var zone
 
-  var division = 5
-  var divisionW = stage.w / division
-  var divisionH = stage.h / division
-  var block
-  var zone
-
-  for (var c = 0; c < division; c++) {
-    for (var r = 0; r < division; r++) {
-      hitZones.push({
-        x: divisionW * c,
-        y: divisionH * r,
-        w: divisionW,
-        h: divisionH,
-        blocks: [],
-        render: function() {
-          stage.ctx.fillRect(this.x, this.y, 5, 5)
-        }
-      })
-    }
-  }
-
-  for (var b = 0; b < blocks.length; b++) {
-    block = blocks[b]
-    for (var z = 0; z < hitZones.length; z++) {
-      zone = hitZones[z]
-      if (hitTest.isHit(block, zone)) {
-        zone.blocks.push(block)
+for (var c = 0; c < division; c++) {
+  for (var r = 0; r < division; r++) {
+    stage.hitZones.push({
+      x: divisionW * c,
+      y: divisionH * r,
+      w: divisionW,
+      h: divisionH,
+      blocks: [],
+      render: function() {
+        stage.ctx.fillRect(this.x, this.y, 5, 5)
       }
-    }
+    })
   }
 }
 
+for (var b = 0; b < blocks.length; b++) {
+  block = blocks[b]
+  for (var z = 0; z < stage.hitZones.length; z++) {
+    zone = stage.hitZones[z]
+    if (hitTest.isHit(block, zone)) {
+      zone.blocks.push(block)
+    }
+  }
+}
+}
+
 function setupEvents() {
-  addEventListener('keydown', function (e) {
-    keysDown[e.keyCode] = true
+  addEventListener('keydown', function (event) {
+    if (event.keyCode in stage.keysDown == false) {
+      stage.keysDown[event.keyCode] = {
+        code: event.keyCode,
+        time: {depressed: stage.time.passed}
+      }
+    }
   }, false)
 
-  addEventListener('keyup', function (e) {
-    delete keysDown[e.keyCode]
+  addEventListener('keyup', function (event) {
+    var leaveCode = event.keyCode
+    delete stage.keysDown[leaveCode]
   }, false)
 
   stage.canvasEl.addEventListener('mousemove', function(e) {
-    mouse.x = e.clientX - stage.canvasRect.left
-    mouse.y = e.clientY - stage.canvasRect.bottom
-    mouse.storeVelocity()
+    stage.mouse.x = e.clientX - stage.canvasRect.left
+    stage.mouse.y = e.clientY - stage.canvasRect.bottom
+    stage.mouse.storeVelocity()
   }, false)
 }
 
 function setupBalls() {
+  var balls = [
+    new ballFactory(),
+  ]
   var ball
+  
   for (var b = 0; b < balls.length; b++) {
     ball = balls[b]
     var quarterStageH = ((stage.h / 2) / 2)
@@ -119,22 +192,26 @@ function setupBalls() {
     // ball.vY = parseFloat(Math.random().toFixed(2))
     ball.vX = .2
     ball.vY = .2
+    stage.balls.push(ball)
     scenery.push(ball)
   }
 }
 
 function setupPaddle() {
-    var quarterStageH = ((stage.h / 2) / 2)
-    var vpos = (quarterStageH * 3) + (quarterStageH / 2) - (paddle.h / 2)
-    paddle.x = (stage.w / 2) - (paddle.w / 2)
-    paddle.y = vpos
-    scenery.push(paddle)
+  var paddle = new paddleFactory()
+  var quarterStageH = ((stage.h / 2) / 2)
+  var vpos = (quarterStageH * 3) + (quarterStageH / 2) - (paddle.h / 2)
+
+  paddle.x = (stage.w / 2) - (paddle.w / 2)
+  paddle.y = vpos
+  stage.paddle = paddle
+  scenery.push(paddle)
 }
 
 function loop() {
   timeNow = Date.now()
-  stage.timeDelta = timeNow - timeThen
-  stage.timePassed += stage.timeDelta
+  stage.time.delta = timeNow - timeThen
+  stage.time.passed += stage.time.delta
   update()
   render()
   timeThen = timeNow
@@ -142,7 +219,7 @@ function loop() {
 }
 
 function updateFps() {
-  frameInfo.push(stage.timeDelta)
+  frameInfo.push(stage.time.delta)
   var frameTime = 0
   for (var f = 0; f < frameInfo.length; f++) {
     frameTime += frameInfo[f]
@@ -153,60 +230,12 @@ function updateFps() {
   }
 }
 
-function updateBalls() {
-  var zone
-
-  for (var b = 0; b < balls.length; b++) {
-    ball = balls[b]
-    ball.moveVelocity(stage.timeDelta)
-    ball.hitStage(stage)
-    ball.hitPaddle(paddle)
-    for (var z = 0; z < hitZones.length; z++) {
-      zone = hitZones[z]
-      if (hitTest.isHit(ball, zone)) {
-        ball.zone = zone
-      }
-    }
-  }
-}
-
-function updateBlocks() {
-  var blockHitThisFrame
-  var block
-  var ball
-
-  for (var a = 0; a < balls.length; a++) {
-    ball = balls[a]
-    for (var b = 0; b < ball.zone.blocks.length; b++) {
-      block = ball.zone.blocks[b]
-      if (!blockHitThisFrame && !block.isDestroyed()) {
-        hitResult = hitTest.isHit(block, ball)
-        if (hitResult) {
-          block.takeDamage()
-          blockHitThisFrame = true
-          var correctionPos = hitTest.getOutsidePos(block, ball)
-          block.color = '#333'
-          ball.x = correctionPos.x
-          ball.y = correctionPos.y
-          if (correctionPos.direction == 'v') {
-            ball.bounceVertical()
-          } else {
-            ball.bounceHorisontal()
-          }
-        }
-      }
-    }
-  }
-}
-
 function update() {
   updateFps()
-  paddle.mouseMove(mouse)
-  updateBalls()
-  updateBlocks()
 
-  // work out where the ball is in relation to all other blocks
-  // narrow down which ones could possibly be hit, using the grid they are placed?
+  for (var s = 0; s < scenery.length; s++) {
+    scenery[s].update(stage)
+  }
 }
 
 function render() {
@@ -218,14 +247,12 @@ function render() {
 
   // fps
   stage.ctx.font = "12px Arial";
-  stage.ctx.fillStyle = "#ccc";
-  stage.ctx.fillText(fps, 30, 30);
+  stage.ctx.fillStyle = "#666";
+  stage.ctx.fillText(fps, stage.w - 30, stage.h - 30);
   
   for (var s = 0; s < scenery.length; s++) {
     scenery[s].render(stage)
   }
-
-  // score?
 }
 
 function setupBlocks() {

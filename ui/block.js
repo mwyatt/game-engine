@@ -2,8 +2,8 @@ var blockFactory = function() {
   this.type = ''
   this.x = 0
   this.y = 0
-  this.w = 16
-  this.h = 16
+  this.w = 32
+  this.h = 14
   this.lives = 1
   this.color = '#666'
   this.animationDestroy = {
@@ -21,6 +21,35 @@ var blockFactory = function() {
     this.lives--
   }
 
+  this.update = function(stage) {
+    var blockHitThisFrame
+    var block
+    var ball
+
+    for (var a = 0; a < stage.balls.length; a++) {
+      ball = stage.balls[a]
+      for (var b = 0; b < ball.zone.blocks.length; b++) {
+        block = ball.zone.blocks[b]
+        if (!blockHitThisFrame && !block.isDestroyed()) {
+          hitResult = hitTest.isHit(block, ball)
+          if (hitResult) {
+            block.takeDamage()
+            blockHitThisFrame = true
+            var correctionPos = hitTest.getOutsidePos(block, ball)
+            block.color = '#333'
+            ball.x = correctionPos.x
+            ball.y = correctionPos.y
+            if (correctionPos.direction == 'v') {
+              ball.bounceVertical()
+            } else {
+              ball.bounceHorisontal()
+            }
+          }
+        }
+      }
+    }
+  }
+
   this.render = function(stage) {
 
     // destroyed and animation played
@@ -29,7 +58,7 @@ var blockFactory = function() {
     }
 
     if (this.isDestroyed()) {
-      this.animationDestroy.progress += stage.timeDelta
+      this.animationDestroy.progress += stage.time.delta
       if (this.animationDestroy.progress >= this.animationDestroy.length) {
         return this.animationDestroy.iteration = 1
       }

@@ -5,11 +5,11 @@ var mouseFactory = function() {
   this.vXHistory = 0
 
   this.storeVelocity = function() {
-    this.vX = this.vXHistory - mouse.x;
+    // this.vX = this.vXHistory - this.x;
 
     // look at the time passed going in one direction and how fast it has gone
     // vx should be at zero when still for a little while
 
-    this.vXHistory = mouse.x;
+    this.vXHistory = this.x;
   }
 }

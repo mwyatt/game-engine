@@ -5,6 +5,7 @@
 </head>
 <body>
     <script src="ui/hittest.js?<?php echo filemtime('ui/hittest.js') ?>"></script>
+    <script src="ui/button.js?<?php echo filemtime('ui/button.js') ?>"></script>
     <script src="ui/paddle.js?<?php echo filemtime('ui/paddle.js') ?>"></script>
     <script src="ui/block.js?<?php echo filemtime('ui/block.js') ?>"></script>
     <script src="ui/mouse.js?<?php echo filemtime('ui/mouse.js') ?>"></script>

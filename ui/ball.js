@@ -3,6 +3,8 @@ var hitTest = hitTest
 var ballFactory = function() {
   this.vMaxPositive = .35
   this.vMaxNegative = -.35
+
+  this.spin = 0
   this.spinDuration = 0
 
   this.w = 12
@@ -12,8 +14,20 @@ var ballFactory = function() {
   this.y = 0
   this.vX = 0
   this.vY = 0
-  this.spin = 0
   this.zone
+
+  this.update = function(stage) {
+    var zone
+    this.moveVelocity(stage.time.delta)
+    this.hitStage(stage)
+    this.hitPaddle(stage)
+    for (var z = 0; z < stage.hitZones.length; z++) {
+      zone = stage.hitZones[z]
+      if (hitTest.isHit(this, zone)) {
+        this.zone = zone
+      }
+    }
+  },
 
   this.render = function(stage) {
     stage.ctx.fillStyle = '#666'
@@ -22,31 +36,31 @@ var ballFactory = function() {
     stage.ctx.fill()
   }
 
-  this.hitPaddle = function(paddle) {
-    var result = hitTest.isHit(paddle, this)
+  this.hitPaddle = function(stage) {
+    var result = hitTest.isHit(stage.paddle, this)
     if (result) {
-      var correctionPos = hitTest.getOutsidePos(paddle, this)
+      var maxSpin = 10
+      var correctionPos = hitTest.getOutsidePos(stage.paddle, this)
       this.x = correctionPos.x
       this.y = correctionPos.y
       if (correctionPos.direction == 'v') {
-        ball.bounceVertical()
+        this.bounceVertical()
       } else {
-        ball.bounceHorisontal()
+        this.bounceHorisontal()
       }
       
-      // max spin 
-      // var mousevx = mouse.getvx()
-      // this.spin = mousevx > 10 ? 10 : mousevx
-      // this.spin = mousevx < -10 && mousevx < 0 ? -10 : this.spin
+      // max spin cap
+      this.spin = stage.mouse.vX > maxSpin ? maxSpin : stage.mouse.vX
+      this.spin = stage.mouse.vX < -maxSpin && stage.mouse.vX < 0 ? -maxSpin : this.spin
 
-      // var spinpositive = this.spin < 0 ? -this.spin : this.spin
+      var spinPositive = this.spin < 0 ? -this.spin : this.spin
 
-      // // reset vx if trying to spin
-      // if (spinpositive > 2) {
-      //   this.vx = 0
-      // }
-
-      // this.spinduration = (spinpositive / 2) * 100
+      // reset vx if trying to spin
+      // wont seem natural?
+      if (spinPositive > 2) {
+        this.vx = 0
+      }
+      this.spinDuration = parseInt((spinPositive / 2) * 100)
     }
   }
 
