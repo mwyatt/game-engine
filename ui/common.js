@@ -1,28 +1,44 @@
 var ballFactory = ballFactory
 var buttonFactory = buttonFactory
+var buttonGroupFactory = buttonGroupFactory
 var mouseFactory = mouseFactory
 var blockFactory = blockFactory
 var paddleFactory = paddleFactory
+var sceneryId = 0
 var stage = {
+  getNewId: function(){
+    return sceneryId++
+  },
   canvasEl: '',
   canvasRect: '',
   ctx: '',
   time: {delta: 0, passed: 0},
-  w: 640,
-  h: 480,
+  w: 480,
+  h: 320,
   gutter: 20,
   mouse: new mouseFactory(),
   keysDown: {},
+  keyCodes: {
+    a: 65,
+    d: 68,
+    enter: 13,
+  },
   hitZones: [],
+  scenery: [],
 
-  // does not feel good being here
-  balls: [],
-  paddle: '',
+  getSceneryByType: function(type) {
+    var scenery = []
+    for (var s = 0; s < this.scenery.length; s++) {
+      if ('type' in this.scenery[s] && this.scenery[s].type == type) {
+        scenery.push(this.scenery[s])
+      }
+    }
+    return scenery
+  },
 }
 var hitTest = hitTest
 var timeThen = Date.now()
 var timeNow
-var scenery = []
 var blocks = []
 var frameInfo = []
 var fps = 0
@@ -34,77 +50,47 @@ setupSceneMenu()
 loop()
 
 function clearScenery() {
-  scenery.splice(0, scenery.length)
+  stage.scenery.splice(0, stage.scenery.length)
 }
 
 function setupSceneMenu() {
   var buttonPlay = new buttonFactory()
   var buttonX = stage.w / 2 - buttonPlay.w / 2
   buttonPlay.x = buttonX
-  buttonPlay.y = 20
-  buttonPlay.text = 'Option1'
+  buttonPlay.y = stage.h / 2 - ((buttonPlay.h * 2 + 10) / 2)
+  buttonPlay.text = 'Play'
   buttonPlay.action = function() {
     clearScenery()
     setupSceneLevel()
   }
 
-  var buttonOptions = new buttonFactory()
-  buttonOptions.x = buttonX
-  buttonOptions.y = 20 + 10 + buttonPlay.h
-  buttonOptions.text = 'Option2'
-  buttonOptions.action = function() {
-    clearScenery()
-    setupSceneOptions()
-  }
+  // var buttonOptions = new buttonFactory()
+  // buttonOptions.x = buttonX
+  // buttonOptions.y = buttonPlay.y + buttonPlay.h + 10
+  // buttonOptions.text = 'Op2'
+  // buttonOptions.action = function() {
+  //   clearScenery()
+  //   setupSceneOptions()
+  // }
 
-  var buttonGroup = {
-    buttons: [buttonPlay, buttonOptions],
-    selectedIndex: 0,
-    navCodes: [38, 40, 13],
-    keyTimesDepressedCache: {
-      38: 0,
-      40: 0,
-      13: 0,
-    },
-    render: function() {
-      for (var b = 0; b < this.buttons.length; b++) {
-        this.buttons[b].render()
-      }
-    },
-    update: function() {
-      for (var b = 0; b < this.buttons.length; b++) {
-        this.buttons[b].selected = 0
-      }
-      this.buttons[this.selectedIndex].selected = 1
-      var navCode
-      for (var b = 0; b < this.navCodes.length; b++) {
-        navCode = this.navCodes[b]
-        if (navCode in stage.keysDown) {
-          if (this.keyTimesDepressedCache[navCode] != stage.keysDown[navCode].time.depressed) {
-            if (navCode == 40) {
-              this.selectedIndex ++
-            } else if (navCode == 38) {
-              this.selectedIndex --
-            }
-            if (this.selectedIndex < 0) {
-              this.selectedIndex = 0
-            }
-            if (this.selectedIndex > this.buttons.length - 1) {
-              this.selectedIndex = this.buttons.length - 1
-            }
-            if (navCode == 13) {
-              this.buttons[this.selectedIndex].action()
-            }
-            this.keyTimesDepressedCache[navCode] = stage.keysDown[navCode].time.depressed
-          }
-        }
-      }
-    },
-  }
-  scenery.push(buttonGroup)
+  var buttonGroup = new buttonGroupFactory()
+  buttonGroup.buttons.push(buttonPlay)
+  // buttonGroup.buttons.push(buttonOptions)
+
+  stage.scenery.push(buttonGroup)
 }
 
 function setupSceneLevel() {
+  var endCondition = {
+    update: function() {
+      if (stage.balls.length < 1) {
+        clearScenery()
+        setupSceneMenu()
+      }
+    },
+    render: function() {},
+  }
+  stage.scenery.push(endCondition)
   setupPaddle()
   setupBalls()
   setupBlocks()
@@ -193,7 +179,7 @@ function setupBalls() {
     ball.vX = .2
     ball.vY = .2
     stage.balls.push(ball)
-    scenery.push(ball)
+    stage.scenery.push(ball)
   }
 }
 
@@ -205,7 +191,7 @@ function setupPaddle() {
   paddle.x = (stage.w / 2) - (paddle.w / 2)
   paddle.y = vpos
   stage.paddle = paddle
-  scenery.push(paddle)
+  stage.scenery.push(paddle)
 }
 
 function loop() {
@@ -233,8 +219,8 @@ function updateFps() {
 function update() {
   updateFps()
 
-  for (var s = 0; s < scenery.length; s++) {
-    scenery[s].update(stage)
+  for (var s = 0; s < stage.scenery.length; s++) {
+    stage.scenery[s].update(stage)
   }
 }
 
@@ -242,16 +228,16 @@ function render() {
 
   // clear
   stage.ctx.clearRect(0, 0, stage.w, stage.h)
-  stage.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)'
+  stage.ctx.fillStyle = 'hsl(189, 20%, 90%)'
   stage.ctx.fillRect(0, 0, stage.w, stage.h)
 
   // fps
-  stage.ctx.font = "12px Arial";
-  stage.ctx.fillStyle = "#666";
-  stage.ctx.fillText(fps, stage.w - 30, stage.h - 30);
+  stage.ctx.font = "11px Verdana";
+  stage.ctx.fillStyle = "hsl(189, 20%, 70%)";
+  stage.ctx.fillText(fps, stage.w - 20, stage.h - 20);
   
-  for (var s = 0; s < scenery.length; s++) {
-    scenery[s].render(stage)
+  for (var s = 0; s < stage.scenery.length; s++) {
+    stage.scenery[s].render(stage)
   }
 }
 
@@ -261,6 +247,7 @@ function setupBlocks() {
   var blockTemp = new blockFactory()
   var colTotal = parseInt(hSpace / blockTemp.w)
   var rowTotal = parseInt(vSpace / blockTemp.h)
+  var oneTo10
 
   // temp
   // var block = new blockFactory()
@@ -271,10 +258,16 @@ function setupBlocks() {
   for (row = 1; row <= rowTotal; row++) {
     for (col = 1; col <= colTotal; col++) {
       var block = new blockFactory()
+      oneTo10 = Math.floor(Math.random() * (11 - 1) + 1)
+      if (oneTo10 > 8) {
+        block.power = 'newBall'
+      } else if (oneTo10 < 2) {
+        block.power = 'paddleExpand'
+      }
       block.x = (col * block.w)
       block.y = (row * block.h)
       blocks.push(block)
-      scenery.push(block)
+      stage.scenery.push(block)
     }
   }
 }

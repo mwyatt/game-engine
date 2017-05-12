@@ -14,14 +14,14 @@ var buttonFactory = function() {
 
   this.render = function() {
     if (this.selected) {
-      stage.ctx.fillStyle = '#666'
+      stage.ctx.fillStyle = 'hsl(189, 79%, 63%)'
     } else {
-      stage.ctx.fillStyle = '#ccc'
+      stage.ctx.fillStyle = 'hsl(189, 79%, 53%)'
     }
     stage.ctx.fillRect(this.x, this.y, this.w, this.h)
     var fontSize = 32
     stage.ctx.font = fontSize + "px Arial";
-    stage.ctx.fillStyle = "#333";
+    stage.ctx.fillStyle = "hsl(189, 79%, 93%)";
     stage.ctx.textAlign = "center";
     stage.ctx.textBaseline = "middle"
     var x = this.x + this.w / 2

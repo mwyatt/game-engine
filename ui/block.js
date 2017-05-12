@@ -1,13 +1,22 @@
 var blockFactory = function() {
-  this.type = ''
+  this.power = ''
   this.x = 0
   this.y = 0
   this.w = 32
   this.h = 14
   this.lives = 1
-  this.color = '#666'
+  this.opacity = 1
+
+  this.color = function() {
+
+ // else if (this.lives == 2) {
+ //      stage.ctx.fillStyle = '#333'
+ //    } else if (this.lives == 1) {
+
+    return 'hsla(100, 40%, 50%, ' + this.opacity + ')'
+  }
   this.animationDestroy = {
-    length: 200,
+    length: 300,
     iteration: 0,
     maxIteration: 1,
     progress: 0
@@ -36,7 +45,7 @@ var blockFactory = function() {
             block.takeDamage()
             blockHitThisFrame = true
             var correctionPos = hitTest.getOutsidePos(block, ball)
-            block.color = '#333'
+            // block.color = '#333'
             ball.x = correctionPos.x
             ball.y = correctionPos.y
             if (correctionPos.direction == 'v') {
@@ -64,12 +73,17 @@ var blockFactory = function() {
       }
       var positiveDecimal = this.animationDestroy.progress / this.animationDestroy.length
       var opacity = 1 - (Math.round(positiveDecimal * 10) / 10)
-      stage.ctx.fillStyle = 'rgba(0, 0, 0, ' + opacity + ')'
-    } else if (this.lives == 2) {
-      stage.ctx.fillStyle = '#333'
-    } else if (this.lives == 1) {
-      stage.ctx.fillStyle = this.color
+      this.opacity = opacity
     }
+    stage.ctx.fillStyle = this.color()
     stage.ctx.fillRect(this.x, this.y, this.w, this.h)
+
+    if (this.power.length) {
+      stage.ctx.font = "8px Arial";
+      stage.ctx.fillStyle = "#333";
+      stage.ctx.textAlign = "center";
+      stage.ctx.textBaseline = "middle"
+      stage.ctx.fillText(this.power, this.x, this.y);
+    }
   }
 }

@@ -1,8 +1,10 @@
 var hitTest = hitTest
 
 var ballFactory = function() {
+  this.type = 'ball'
   this.vMaxPositive = .35
   this.vMaxNegative = -.35
+  this.timeCreated = Date.now()
 
   this.spin = 0
   this.spinDuration = 0
@@ -30,7 +32,7 @@ var ballFactory = function() {
   },
 
   this.render = function(stage) {
-    stage.ctx.fillStyle = '#666'
+    stage.ctx.fillStyle = 'hsla(0, 80%, 60%, 1)'
     stage.ctx.beginPath()
     stage.ctx.arc(this.x + (this.w / 2), this.y + (this.h / 2), this.w / 2, 0, Math.PI * 2, true)
     stage.ctx.fill()
@@ -82,6 +84,17 @@ var ballFactory = function() {
     } else if (hitTest.getTop(this) < 0) {
       this.y = 0
     } else if (hitTest.getBottom(this) > stage.h) {
+      var balls = stage.getSceneryByType('ball')
+      for (var b = 0; b < balls.length; b++) {
+        if (balls[b].timeCreated == this.timeCreated) {
+          balls.splice(b, 1)
+        }
+      }
+      for (var s = 0; s < stage.scenery.length; s++) {
+        if ('type' in stage.scenery[s] && stage.scenery[s].timeCreated == this.timeCreated) {
+          stage.scenery.splice(s, 1)
+        }
+      }
       this.y = stage.h - this.w
     }
 
