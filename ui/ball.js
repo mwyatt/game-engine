@@ -39,10 +39,12 @@ var ballFactory = function() {
   }
 
   this.hitPaddle = function(stage) {
-    var result = hitTest.isHit(stage.paddle, this)
+    var paddles = stage.getSceneryByType('paddle')
+    var paddle = paddles[0]
+    var result = hitTest.isHit(paddle, this)
     if (result) {
       var maxSpin = 10
-      var correctionPos = hitTest.getOutsidePos(stage.paddle, this)
+      var correctionPos = hitTest.getOutsidePos(paddle, this)
       this.x = correctionPos.x
       this.y = correctionPos.y
       if (correctionPos.direction == 'v') {

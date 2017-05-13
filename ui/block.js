@@ -1,4 +1,5 @@
 var blockFactory = function() {
+  this.type = 'block'
   this.power = ''
   this.x = 0
   this.y = 0
@@ -34,9 +35,10 @@ var blockFactory = function() {
     var blockHitThisFrame
     var block
     var ball
+    var balls = stage.getSceneryByType('ball')
 
-    for (var a = 0; a < stage.balls.length; a++) {
-      ball = stage.balls[a]
+    for (var a = 0; a < balls.length; a++) {
+      ball = balls[a]
       for (var b = 0; b < ball.zone.blocks.length; b++) {
         block = ball.zone.blocks[b]
         if (!blockHitThisFrame && !block.isDestroyed()) {

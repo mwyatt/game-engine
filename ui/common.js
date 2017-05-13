@@ -1,3 +1,4 @@
+var requestFrame
 var ballFactory = ballFactory
 var buttonFactory = buttonFactory
 var buttonGroupFactory = buttonGroupFactory
@@ -5,6 +6,27 @@ var mouseFactory = mouseFactory
 var blockFactory = blockFactory
 var paddleFactory = paddleFactory
 var sceneryId = 0
+var endConditionMet = 0
+var keyCodes = {
+  a: 65,
+  d: 68,
+  enter: 13,
+  numpad: {
+    minus: 109,
+    plus: 107
+  },
+  down: 40,
+  up: 38,
+  esc: 27,
+  backspace: 8,
+  f1: 112,
+  f2: 113,
+  f3: 114,
+  f4: 115,
+  minus: 189,
+  plus: 187,
+  tab: 9 // works as android enter / next
+}
 var stage = {
   getNewId: function(){
     return sceneryId++
@@ -18,11 +40,7 @@ var stage = {
   gutter: 20,
   mouse: new mouseFactory(),
   keysDown: {},
-  keyCodes: {
-    a: 65,
-    d: 68,
-    enter: 13,
-  },
+  keyCodes: keyCodes,
   hitZones: [],
   scenery: [],
 
@@ -39,18 +57,17 @@ var stage = {
 var hitTest = hitTest
 var timeThen = Date.now()
 var timeNow
-var blocks = []
 var frameInfo = []
 var fps = 0
 
 setupStage()
 setupEvents()
 setupSceneMenu()
-// setupSceneLevel()
 loop()
 
 function clearScenery() {
-  stage.scenery.splice(0, stage.scenery.length)
+  stage.hitZones = []
+  stage.scenery = []
 }
 
 function setupSceneMenu() {
@@ -83,9 +100,9 @@ function setupSceneMenu() {
 function setupSceneLevel() {
   var endCondition = {
     update: function() {
-      if (stage.balls.length < 1) {
-        clearScenery()
-        setupSceneMenu()
+      var balls = stage.getSceneryByType('ball')
+      if (balls.length < 1) {
+        endConditionMet = 1
       }
     },
     render: function() {},
@@ -109,36 +126,37 @@ function setupStage() {
 }
 
 function setupZones() {
-var division = 5
-var divisionW = stage.w / division
-var divisionH = stage.h / division
-var block
-var zone
+  var division = 5
+  var divisionW = stage.w / division
+  var divisionH = stage.h / division
+  var block
+  var zone
+  var blocks = stage.getSceneryByType('block')
 
-for (var c = 0; c < division; c++) {
-  for (var r = 0; r < division; r++) {
-    stage.hitZones.push({
-      x: divisionW * c,
-      y: divisionH * r,
-      w: divisionW,
-      h: divisionH,
-      blocks: [],
-      render: function() {
-        stage.ctx.fillRect(this.x, this.y, 5, 5)
-      }
-    })
-  }
-}
-
-for (var b = 0; b < blocks.length; b++) {
-  block = blocks[b]
-  for (var z = 0; z < stage.hitZones.length; z++) {
-    zone = stage.hitZones[z]
-    if (hitTest.isHit(block, zone)) {
-      zone.blocks.push(block)
+  for (var c = 0; c < division; c++) {
+    for (var r = 0; r < division; r++) {
+      stage.hitZones.push({
+        x: divisionW * c,
+        y: divisionH * r,
+        w: divisionW,
+        h: divisionH,
+        blocks: [],
+        render: function() {
+          stage.ctx.fillRect(this.x, this.y, 5, 5)
+        }
+      })
     }
   }
-}
+
+  for (var b = 0; b < blocks.length; b++) {
+    block = blocks[b]
+    for (var z = 0; z < stage.hitZones.length; z++) {
+      zone = stage.hitZones[z]
+      if (hitTest.isHit(block, zone)) {
+        zone.blocks.push(block)
+      }
+    }
+  }
 }
 
 function setupEvents() {
@@ -178,7 +196,6 @@ function setupBalls() {
     // ball.vY = parseFloat(Math.random().toFixed(2))
     ball.vX = .2
     ball.vY = .2
-    stage.balls.push(ball)
     stage.scenery.push(ball)
   }
 }
@@ -190,7 +207,6 @@ function setupPaddle() {
 
   paddle.x = (stage.w / 2) - (paddle.w / 2)
   paddle.y = vpos
-  stage.paddle = paddle
   stage.scenery.push(paddle)
 }
 
@@ -201,7 +217,15 @@ function loop() {
   update()
   render()
   timeThen = timeNow
-  window.requestAnimationFrame(loop)
+
+  if (endConditionMet) {
+    window.cancelAnimationFrame(requestFrame)
+    clearScenery()
+    setupSceneMenu()
+    endConditionMet = 0
+  } else {
+    requestFrame = window.requestAnimationFrame(loop)
+  }
 }
 
 function updateFps() {
@@ -218,7 +242,6 @@ function updateFps() {
 
 function update() {
   updateFps()
-
   for (var s = 0; s < stage.scenery.length; s++) {
     stage.scenery[s].update(stage)
   }
@@ -266,7 +289,6 @@ function setupBlocks() {
       }
       block.x = (col * block.w)
       block.y = (row * block.h)
-      blocks.push(block)
       stage.scenery.push(block)
     }
   }
