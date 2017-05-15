@@ -1,4 +1,4 @@
-var requestFrame
+var requestFrameId
 var ballFactory = ballFactory
 var buttonFactory = buttonFactory
 var buttonGroupFactory = buttonGroupFactory
@@ -43,6 +43,10 @@ var stage = {
   keyCodes: keyCodes,
   hitZones: [],
   scenery: [],
+  pause: {
+    isPaused: '',
+    possible: '',
+  },
 
   getSceneryByType: function(type) {
     var scenery = []
@@ -98,21 +102,65 @@ function setupSceneMenu() {
 }
 
 function setupSceneLevel() {
+  setupEndCondition()
+  setupPaddle()
+  setupBalls()
+  setupBlocks()
+  setupZones()
+  setupPauseOption()
+  // score?
+}
+
+function setupEndCondition() {
   var endCondition = {
     update: function() {
       var balls = stage.getSceneryByType('ball')
-      if (balls.length < 1) {
+      var livesLeft = 0
+      for (var b = 0; b < balls.length; b++) {
+        livesLeft += balls[b].lives
+      }
+      if (livesLeft < 1) {
         endConditionMet = 1
+        stage.scenery.push({
+          update: function() {
+            stage.ctx.fillStyle = 'hsla(100, 40%, 50%, 0.7)'
+            stage.ctx.fillRect(0, 0, stage.w, stage.h)
+            stage.ctx.font = "32px Arial";
+            stage.ctx.fillStyle = "hsl(189, 79%, 93%)";
+            stage.ctx.textAlign = "center";
+            stage.ctx.textBaseline = "middle"
+            var x = stage.w / 2
+            var y = stage.h / 2
+            stage.ctx.fillText('Game Over', x, y);
+          },
+          render: function() {}
+        })
       }
     },
     render: function() {},
   }
   stage.scenery.push(endCondition)
-  setupPaddle()
-  setupBalls()
-  setupBlocks()
-  setupZones()
-  // score?
+}
+
+function setupPauseOption() {
+  stage.pause.possible = true
+  var pause = {
+    update: function() {},
+    render: function(stage) {
+      if (stage.pause.isPaused) {
+        stage.ctx.fillStyle = 'hsla(100, 40%, 50%, 0.7)'
+        stage.ctx.fillRect(0, 0, stage.w, stage.h)
+        stage.ctx.font = "32px Arial";
+        stage.ctx.fillStyle = "hsl(189, 79%, 93%)";
+        stage.ctx.textAlign = "center";
+        stage.ctx.textBaseline = "middle"
+        var x = stage.w / 2
+        var y = stage.h / 2
+        stage.ctx.fillText('Paused', x, y);
+      }
+    },
+  }
+  stage.scenery.push(pause)
 }
 
 function setupStage() {
@@ -160,16 +208,22 @@ function setupZones() {
 }
 
 function setupEvents() {
-  addEventListener('keydown', function (event) {
+  window.addEventListener('keydown', function (event) {
+    var keyConfig
     if (event.keyCode in stage.keysDown == false) {
-      stage.keysDown[event.keyCode] = {
+      keyConfig = {
         code: event.keyCode,
         time: {depressed: stage.time.passed}
+      }
+      stage.keysDown[event.keyCode] = keyConfig
+
+      if (stage.keyCodes.esc == keyConfig.code && stage.pause.possible) {
+        stage.pause.isPaused = stage.pause.isPaused ? 0 : 1
       }
     }
   }, false)
 
-  addEventListener('keyup', function (event) {
+  window.addEventListener('keyup', function (event) {
     var leaveCode = event.keyCode
     delete stage.keysDown[leaveCode]
   }, false)
@@ -211,21 +265,23 @@ function setupPaddle() {
 }
 
 function loop() {
+  requestFrameId = window.requestAnimationFrame(loop)
   timeNow = Date.now()
   stage.time.delta = timeNow - timeThen
   stage.time.passed += stage.time.delta
+
+  if (endConditionMet) {
+    stage.pause.isPaused = true
+    // window.cancelAnimationFrame(requestFrameId)
+    // clearScenery()
+    // setupSceneMenu()
+    // endConditionMet = 0
+    // loop()
+  }
+
   update()
   render()
   timeThen = timeNow
-
-  if (endConditionMet) {
-    window.cancelAnimationFrame(requestFrame)
-    clearScenery()
-    setupSceneMenu()
-    endConditionMet = 0
-  } else {
-    requestFrame = window.requestAnimationFrame(loop)
-  }
 }
 
 function updateFps() {
@@ -282,11 +338,14 @@ function setupBlocks() {
     for (col = 1; col <= colTotal; col++) {
       var block = new blockFactory()
       oneTo10 = Math.floor(Math.random() * (11 - 1) + 1)
-      if (oneTo10 > 8) {
+      if (oneTo10 < 3) {
         block.power = 'newBall'
-      } else if (oneTo10 < 2) {
+      } else if (oneTo10 < 6) {
+        block.power = 'paddleShrink'
+      } else if (oneTo10 < 10) {
         block.power = 'paddleExpand'
       }
+
       block.x = (col * block.w)
       block.y = (row * block.h)
       stage.scenery.push(block)

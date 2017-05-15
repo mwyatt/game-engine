@@ -2,6 +2,7 @@ var hitTest = hitTest
 
 var ballFactory = function() {
   this.type = 'ball'
+  this.lives = 1
   this.vMaxPositive = .35
   this.vMaxNegative = -.35
   this.timeCreated = Date.now()
@@ -19,14 +20,16 @@ var ballFactory = function() {
   this.zone
 
   this.update = function(stage) {
-    var zone
-    this.moveVelocity(stage.time.delta)
-    this.hitStage(stage)
-    this.hitPaddle(stage)
-    for (var z = 0; z < stage.hitZones.length; z++) {
-      zone = stage.hitZones[z]
-      if (hitTest.isHit(this, zone)) {
-        this.zone = zone
+    if (!stage.pause.isPaused && this.lives > 0) {
+      var zone
+      this.moveVelocity(stage.time.delta)
+      this.hitStage(stage)
+      this.hitPaddle(stage)
+      for (var z = 0; z < stage.hitZones.length; z++) {
+        zone = stage.hitZones[z]
+        if (hitTest.isHit(this, zone)) {
+          this.zone = zone
+        }
       }
     }
   },
@@ -41,6 +44,9 @@ var ballFactory = function() {
   this.hitPaddle = function(stage) {
     var paddles = stage.getSceneryByType('paddle')
     var paddle = paddles[0]
+    if (!paddle) {
+      return
+    }
     var result = hitTest.isHit(paddle, this)
     if (result) {
       var maxSpin = 10
@@ -86,17 +92,6 @@ var ballFactory = function() {
     } else if (hitTest.getTop(this) < 0) {
       this.y = 0
     } else if (hitTest.getBottom(this) > stage.h) {
-      var balls = stage.getSceneryByType('ball')
-      for (var b = 0; b < balls.length; b++) {
-        if (balls[b].timeCreated == this.timeCreated) {
-          balls.splice(b, 1)
-        }
-      }
-      for (var s = 0; s < stage.scenery.length; s++) {
-        if ('type' in stage.scenery[s] && stage.scenery[s].timeCreated == this.timeCreated) {
-          stage.scenery.splice(s, 1)
-        }
-      }
       this.y = stage.h - this.w
     }
 
@@ -112,6 +107,16 @@ var ballFactory = function() {
       this.vY = -this.vY
     } else if (hitTest.getTop(this) == 0) {
       this.vY = -this.vY
+    }
+
+    // damage taken
+    if (hitTest.getBottom(this) == stage.h) {
+      this.lives --
+      for (var s = 0; s < stage.scenery.length; s++) {
+        if ('type' in stage.scenery[s] && stage.scenery[s].timeCreated == this.timeCreated) {
+          stage.scenery.splice(s, 1)
+        }
+      }
     }
   }
 

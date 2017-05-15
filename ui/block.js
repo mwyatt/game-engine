@@ -39,21 +39,41 @@ var blockFactory = function() {
 
     for (var a = 0; a < balls.length; a++) {
       ball = balls[a]
-      for (var b = 0; b < ball.zone.blocks.length; b++) {
-        block = ball.zone.blocks[b]
-        if (!blockHitThisFrame && !block.isDestroyed()) {
-          hitResult = hitTest.isHit(block, ball)
-          if (hitResult) {
-            block.takeDamage()
-            blockHitThisFrame = true
-            var correctionPos = hitTest.getOutsidePos(block, ball)
-            // block.color = '#333'
-            ball.x = correctionPos.x
-            ball.y = correctionPos.y
-            if (correctionPos.direction == 'v') {
-              ball.bounceVertical()
-            } else {
-              ball.bounceHorisontal()
+      if (ball.zone && ball.zone.blocks) {
+        for (var b = 0; b < ball.zone.blocks.length; b++) {
+          block = ball.zone.blocks[b]
+          if (!blockHitThisFrame && !block.isDestroyed()) {
+            hitResult = hitTest.isHit(block, ball)
+            if (hitResult) {
+              block.takeDamage()
+              blockHitThisFrame = true
+              var correctionPos = hitTest.getOutsidePos(block, ball)
+              // block.color = '#333'
+              ball.x = correctionPos.x
+              ball.y = correctionPos.y
+              if (correctionPos.direction == 'v') {
+                ball.bounceVertical()
+              } else {
+                ball.bounceHorisontal()
+              }
+              if (block.power) {
+                if (block.power == 'paddleExpand') {
+                  var paddles = stage.getSceneryByType('paddle')
+                  var paddle = paddles[0]
+                  paddle.animationGrow.progress = 0
+                }
+                if (block.power == 'paddleShrink') {
+                  var paddles = stage.getSceneryByType('paddle')
+                  var paddle = paddles[0]
+                  paddle.animationShrink.progress = 0
+                }
+                if (block.power == 'newBall') {
+                  var ball = new ballFactory()
+                  ball.vX = .2
+                  ball.vY = .2
+                  stage.scenery.push(ball)
+                }
+              }
             }
           }
         }
