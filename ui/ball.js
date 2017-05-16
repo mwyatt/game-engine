@@ -1,4 +1,4 @@
-var hitTest = hitTest
+var hitTest = require('./hittest')
 
 var ballFactory = function() {
   this.type = 'ball'
@@ -20,16 +20,24 @@ var ballFactory = function() {
   this.zone
 
   this.update = function(stage) {
-    if (!stage.pause.isPaused && this.lives > 0) {
-      var zone
+    if (!stage.pause.isPaused && this.isAlive()) {
+      this.updateHitZone(stage.hitZones)
       this.moveVelocity(stage.time.delta)
       this.hitStage(stage)
       this.hitPaddle(stage)
-      for (var z = 0; z < stage.hitZones.length; z++) {
-        zone = stage.hitZones[z]
-        if (hitTest.isHit(this, zone)) {
-          this.zone = zone
-        }
+    }
+  },
+
+  this.isAlive = function() {
+    return this.lives > 0
+  }
+
+  this.updateHitZone = function(hitZones) {
+    var zone
+    for (var z = 0; z < hitZones.length; z++) {
+      zone = hitZones[z]
+      if (hitTest.isHit(this, zone)) {
+        this.zone = zone
       }
     }
   },
@@ -143,3 +151,5 @@ var ballFactory = function() {
     this.y += Math.round(this.vY * timeDelta)
   }
 }
+
+module.exports = ballFactory

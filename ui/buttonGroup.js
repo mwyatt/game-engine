@@ -8,13 +8,13 @@ var buttonGroupFactory = function() {
     13: 0,
   }
 
-  this.render = function() {
+  this.render = function(stage) {
     for (var b = 0; b < this.buttons.length; b++) {
-      this.buttons[b].render()
+      this.buttons[b].render(stage)
     }
   }
 
-  this.update = function() {
+  this.update = function(stage) {
     for (var b = 0; b < this.buttons.length; b++) {
       this.buttons[b].selected = 0
     }
@@ -44,3 +44,5 @@ var buttonGroupFactory = function() {
     }
   }
 }
+
+module.exports = buttonGroupFactory

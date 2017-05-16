@@ -12,7 +12,7 @@ var buttonFactory = function() {
 
   this.update = function() {}
 
-  this.render = function() {
+  this.render = function(stage) {
     if (this.selected) {
       stage.ctx.fillStyle = 'hsl(189, 79%, 63%)'
     } else {
@@ -29,3 +29,5 @@ var buttonFactory = function() {
     stage.ctx.fillText(this.text, x, y);
   }
 }
+
+module.exports = buttonFactory

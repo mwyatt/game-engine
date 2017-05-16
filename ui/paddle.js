@@ -66,3 +66,5 @@ var paddleFactory = function() {
     stage.ctx.fillRect(this.x, this.y, this.w, this.h)
   }
 }
+
+module.exports = paddleFactory

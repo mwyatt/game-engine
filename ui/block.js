@@ -1,3 +1,6 @@
+var hitTest = require('./hittest')
+var ballFactory = require('./ball')
+
 var blockFactory = function() {
   this.type = 'block'
   this.power = ''
@@ -39,7 +42,7 @@ var blockFactory = function() {
 
     for (var a = 0; a < balls.length; a++) {
       ball = balls[a]
-      if (ball.zone && ball.zone.blocks) {
+      if (ball.zone && ball.zone.blocks != undefined) {
         for (var b = 0; b < ball.zone.blocks.length; b++) {
           block = ball.zone.blocks[b]
           if (!blockHitThisFrame && !block.isDestroyed()) {
@@ -57,20 +60,21 @@ var blockFactory = function() {
                 ball.bounceHorisontal()
               }
               if (block.power) {
+                var paddles = stage.getSceneryByType('paddle')
+                var paddle = paddles[0]
                 if (block.power == 'paddleExpand') {
-                  var paddles = stage.getSceneryByType('paddle')
-                  var paddle = paddles[0]
                   paddle.animationGrow.progress = 0
                 }
                 if (block.power == 'paddleShrink') {
-                  var paddles = stage.getSceneryByType('paddle')
-                  var paddle = paddles[0]
                   paddle.animationShrink.progress = 0
                 }
                 if (block.power == 'newBall') {
                   var ball = new ballFactory()
                   ball.vX = .2
                   ball.vY = .2
+                  ball.x = stage.w / 2 + ball.w / 2
+                  ball.y = paddle.y - 70
+                  ball.updateHitZone(stage.hitZones)
                   stage.scenery.push(ball)
                 }
               }
@@ -84,28 +88,33 @@ var blockFactory = function() {
   this.render = function(stage) {
 
     // destroyed and animation played
-    if (this.isDestroyed() && this.animationDestroy.iteration >= this.animationDestroy.maxIteration) {
-      return
-    }
+    // if (this.isDestroyed() && this.animationDestroy.iteration >= this.animationDestroy.maxIteration) {
+    //   return
+    // }
 
-    if (this.isDestroyed()) {
-      this.animationDestroy.progress += stage.time.delta
-      if (this.animationDestroy.progress >= this.animationDestroy.length) {
-        return this.animationDestroy.iteration = 1
-      }
-      var positiveDecimal = this.animationDestroy.progress / this.animationDestroy.length
-      var opacity = 1 - (Math.round(positiveDecimal * 10) / 10)
-      this.opacity = opacity
-    }
-    stage.ctx.fillStyle = this.color()
-    stage.ctx.fillRect(this.x, this.y, this.w, this.h)
+    // if (this.isDestroyed()) {
+    //   this.animationDestroy.progress += stage.time.delta
+    //   if (this.animationDestroy.progress >= this.animationDestroy.length) {
+    //     return this.animationDestroy.iteration = 1
+    //   }
+    //   var positiveDecimal = this.animationDestroy.progress / this.animationDestroy.length
+    //   var opacity = 1 - (Math.round(positiveDecimal * 10) / 10)
+    //   this.opacity = opacity
+    // }
 
-    if (this.power.length) {
-      stage.ctx.font = "8px Arial";
-      stage.ctx.fillStyle = "#333";
-      stage.ctx.textAlign = "center";
-      stage.ctx.textBaseline = "middle"
-      stage.ctx.fillText(this.power, this.x, this.y);
+    // color
+    var color = stage.palette.gray
+    if (this.power == 'paddleExpand') {
+      color = stage.palette.blue
+    } else if (this.power == 'paddleShrink') {
+      color = stage.palette.red
+    }
+    stage.ctx.fillStyle = color
+
+    if (!this.isDestroyed()) {
+      stage.ctx.fillRect(this.x, this.y, this.w, this.h)
     }
   }
 }
+
+module.exports = blockFactory

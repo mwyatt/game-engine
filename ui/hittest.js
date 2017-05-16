@@ -105,3 +105,5 @@ var hitTest = {
     return this.getLeft(el1) <= this.getRight(el2) && this.isInsideTopAndBottom(el1, el2) && this.getRight(el1) > this.getRight(el2)
   },
 }
+
+module.exports = hitTest

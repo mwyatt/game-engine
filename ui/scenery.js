@@ -1,73 +1,11 @@
-var requestFrameId
-var ballFactory = ballFactory
-var buttonFactory = buttonFactory
-var buttonGroupFactory = buttonGroupFactory
-var mouseFactory = mouseFactory
-var blockFactory = blockFactory
-var paddleFactory = paddleFactory
-var sceneryId = 0
-var endConditionMet = 0
-var keyCodes = {
-  a: 65,
-  d: 68,
-  enter: 13,
-  numpad: {
-    minus: 109,
-    plus: 107
-  },
-  down: 40,
-  up: 38,
-  esc: 27,
-  backspace: 8,
-  f1: 112,
-  f2: 113,
-  f3: 114,
-  f4: 115,
-  minus: 189,
-  plus: 187,
-  tab: 9 // works as android enter / next
-}
-var stage = {
-  getNewId: function(){
-    return sceneryId++
-  },
-  canvasEl: '',
-  canvasRect: '',
-  ctx: '',
-  time: {delta: 0, passed: 0},
-  w: 480,
-  h: 320,
-  gutter: 20,
-  mouse: new mouseFactory(),
-  keysDown: {},
-  keyCodes: keyCodes,
-  hitZones: [],
-  scenery: [],
-  pause: {
-    isPaused: '',
-    possible: '',
-  },
-
-  getSceneryByType: function(type) {
-    var scenery = []
-    for (var s = 0; s < this.scenery.length; s++) {
-      if ('type' in this.scenery[s] && this.scenery[s].type == type) {
-        scenery.push(this.scenery[s])
-      }
-    }
-    return scenery
-  },
-}
-var hitTest = hitTest
-var timeThen = Date.now()
-var timeNow
-var frameInfo = []
-var fps = 0
-
-setupStage()
-setupEvents()
-setupSceneMenu()
-loop()
+var stage = require('./stage')
+var fps = require('./fps')
+var hitTest = require('./hittest')
+var ballFactory = require('./ball')
+var buttonFactory = require('./button')
+var buttonGroupFactory = require('./buttonGroup')
+var blockFactory = require('./block')
+var paddleFactory = require('./paddle')
 
 function clearScenery() {
   stage.hitZones = []
@@ -99,6 +37,7 @@ function setupSceneMenu() {
   // buttonGroup.buttons.push(buttonOptions)
 
   stage.scenery.push(buttonGroup)
+  stage.scenery.push(fps)
 }
 
 function setupSceneLevel() {
@@ -108,21 +47,22 @@ function setupSceneLevel() {
   setupBlocks()
   setupZones()
   setupPauseOption()
+  stage.scenery.push(fps)
   // score?
 }
 
 function setupEndCondition() {
   var endCondition = {
-    update: function() {
+    update: function(stage) {
       var balls = stage.getSceneryByType('ball')
       var livesLeft = 0
       for (var b = 0; b < balls.length; b++) {
         livesLeft += balls[b].lives
       }
       if (livesLeft < 1) {
-        endConditionMet = 1
         stage.scenery.push({
-          update: function() {
+          update: function() {},
+          render: function() {
             stage.ctx.fillStyle = 'hsla(100, 40%, 50%, 0.7)'
             stage.ctx.fillRect(0, 0, stage.w, stage.h)
             stage.ctx.font = "32px Arial";
@@ -132,8 +72,7 @@ function setupEndCondition() {
             var x = stage.w / 2
             var y = stage.h / 2
             stage.ctx.fillText('Game Over', x, y);
-          },
-          render: function() {}
+          }
         })
       }
     },
@@ -174,7 +113,7 @@ function setupStage() {
 }
 
 function setupZones() {
-  var division = 5
+  var division = 3
   var divisionW = stage.w / division
   var divisionH = stage.h / division
   var block
@@ -239,7 +178,6 @@ function setupBalls() {
   var balls = [
     new ballFactory(),
   ]
-  var ball
   
   for (var b = 0; b < balls.length; b++) {
     ball = balls[b]
@@ -250,6 +188,7 @@ function setupBalls() {
     // ball.vY = parseFloat(Math.random().toFixed(2))
     ball.vX = .2
     ball.vY = .2
+    ball.updateHitZone(stage.hitZones)
     stage.scenery.push(ball)
   }
 }
@@ -262,62 +201,6 @@ function setupPaddle() {
   paddle.x = (stage.w / 2) - (paddle.w / 2)
   paddle.y = vpos
   stage.scenery.push(paddle)
-}
-
-function loop() {
-  requestFrameId = window.requestAnimationFrame(loop)
-  timeNow = Date.now()
-  stage.time.delta = timeNow - timeThen
-  stage.time.passed += stage.time.delta
-
-  if (endConditionMet) {
-    stage.pause.isPaused = true
-    // window.cancelAnimationFrame(requestFrameId)
-    // clearScenery()
-    // setupSceneMenu()
-    // endConditionMet = 0
-    // loop()
-  }
-
-  update()
-  render()
-  timeThen = timeNow
-}
-
-function updateFps() {
-  frameInfo.push(stage.time.delta)
-  var frameTime = 0
-  for (var f = 0; f < frameInfo.length; f++) {
-    frameTime += frameInfo[f]
-  }
-  if (frameTime > 1000) {
-    fps = frameInfo.length
-    frameInfo = []
-  }
-}
-
-function update() {
-  updateFps()
-  for (var s = 0; s < stage.scenery.length; s++) {
-    stage.scenery[s].update(stage)
-  }
-}
-
-function render() {
-
-  // clear
-  stage.ctx.clearRect(0, 0, stage.w, stage.h)
-  stage.ctx.fillStyle = 'hsl(189, 20%, 90%)'
-  stage.ctx.fillRect(0, 0, stage.w, stage.h)
-
-  // fps
-  stage.ctx.font = "11px Verdana";
-  stage.ctx.fillStyle = "hsl(189, 20%, 70%)";
-  stage.ctx.fillText(fps, stage.w - 20, stage.h - 20);
-  
-  for (var s = 0; s < stage.scenery.length; s++) {
-    stage.scenery[s].render(stage)
-  }
 }
 
 function setupBlocks() {
@@ -351,4 +234,18 @@ function setupBlocks() {
       stage.scenery.push(block)
     }
   }
+}
+
+module.exports = {
+  clearScenery: clearScenery,
+  setupSceneMenu: setupSceneMenu,
+  setupSceneLevel: setupSceneLevel,
+  setupEndCondition: setupEndCondition,
+  setupPauseOption: setupPauseOption,
+  setupStage: setupStage,
+  setupZones: setupZones,
+  setupEvents: setupEvents,
+  setupBalls: setupBalls,
+  setupPaddle: setupPaddle,
+  setupBlocks: setupBlocks,
 }

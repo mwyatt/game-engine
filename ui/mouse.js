@@ -13,3 +13,5 @@ var mouseFactory = function() {
     this.vXHistory = this.x;
   }
 }
+
+module.exports = mouseFactory

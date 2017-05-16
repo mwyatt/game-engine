@@ -1,5 +1,10 @@
 {
-  "dependencies": {
-    "pixi.js": "^4.5.1"
+  "devDependencies": {
+    "browserify": "^14.3.0",
+    "gulp": "^3.9.1",
+    "gulp-buffer": "0.0.2",
+    "gulp-tap": "^1.0.1",
+    "gulp-watch": "^4.3.11",
+    "gutil": "^1.6.4"
   }
 }
