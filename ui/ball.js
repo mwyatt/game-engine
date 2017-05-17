@@ -43,10 +43,12 @@ var ballFactory = function() {
   },
 
   this.render = function(stage) {
-    stage.ctx.fillStyle = 'hsla(0, 80%, 60%, 1)'
-    stage.ctx.beginPath()
-    stage.ctx.arc(this.x + (this.w / 2), this.y + (this.h / 2), this.w / 2, 0, Math.PI * 2, true)
-    stage.ctx.fill()
+    if (this.isAlive()) {
+      stage.ctx.fillStyle = 'hsla(0, 80%, 60%, 1)'
+      stage.ctx.beginPath()
+      stage.ctx.arc(this.x + (this.w / 2), this.y + (this.h / 2), this.w / 2, 0, Math.PI * 2, true)
+      stage.ctx.fill()
+    }
   }
 
   this.hitPaddle = function(stage) {
@@ -120,11 +122,6 @@ var ballFactory = function() {
     // damage taken
     if (hitTest.getBottom(this) == stage.h) {
       this.lives --
-      for (var s = 0; s < stage.scenery.length; s++) {
-        if ('type' in stage.scenery[s] && stage.scenery[s].timeCreated == this.timeCreated) {
-          stage.scenery.splice(s, 1)
-        }
-      }
     }
   }
 

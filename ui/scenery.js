@@ -12,6 +12,41 @@ function clearScenery() {
   stage.scenery = []
 }
 
+// some kind of transition element
+// fades in a colour
+// fades in some text while moving up\
+// sets up next scene with this scene over it
+// fades out
+
+function appendSceneLevelComplete() {
+
+  // retain level scene items
+
+  var transition = {
+    animationIntro: {
+      opacity: 0,
+      progress: 0,
+      duration: 1000,
+    },
+    update: function(stage) {
+      this.animationIntro.progress += stage.time.delta
+      if (this.animationIntro.progress <= this.animationIntro.duration) {
+        var dec = this.animationIntro.progress / this.animationIntro.duration
+        var opacity = 1 - (Math.round(dec * 10) / 10)
+        this.animationIntro.opacity = opacity
+      }
+      if (this.opacity > 0.7) {
+        
+      }
+    },
+    render: function(stage) {
+      stage.ctx.fillStyle = 'hsla(189, 79%, 53%, ' + this.animationIntro.opacity + ')'
+      stage.ctx.fillRect(0, 0, stage.w, stage.h)
+    },
+  }
+  stage.scenery.push(transition)
+}
+
 function setupSceneMenu() {
   var buttonPlay = new buttonFactory()
   var buttonX = stage.w / 2 - buttonPlay.w / 2
@@ -19,7 +54,6 @@ function setupSceneMenu() {
   buttonPlay.y = stage.h / 2 - ((buttonPlay.h * 2 + 10) / 2)
   buttonPlay.text = 'Play'
   buttonPlay.action = function() {
-    clearScenery()
     setupSceneLevel()
   }
 
@@ -41,6 +75,7 @@ function setupSceneMenu() {
 }
 
 function setupSceneLevel() {
+  clearScenery()
   setupEndCondition()
   setupPaddle()
   setupBalls()
@@ -160,6 +195,11 @@ function setupEvents() {
         stage.pause.isPaused = stage.pause.isPaused ? 0 : 1
       }
     }
+    if (event.keyCode == stage.keyCodes.f2) {
+
+      // time to party?
+      stage.canvasEl.webkitRequestFullscreen()
+    }
   }, false)
 
   window.addEventListener('keyup', function (event) {
@@ -234,6 +274,7 @@ function setupBlocks() {
       stage.scenery.push(block)
     }
   }
+  stage.countBlocks()
 }
 
 module.exports = {

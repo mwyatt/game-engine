@@ -83,6 +83,10 @@ var blockFactory = function() {
         }
       }
     }
+
+    if (blockHitThisFrame) {
+      stage.countBlocks()
+    }
   }
 
   this.render = function(stage) {

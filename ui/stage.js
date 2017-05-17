@@ -1,3 +1,4 @@
+// var scenes = require('./scenery')
 var mouseFactory = require('./mouse')
 var keyCodes = {
   a: 65,
@@ -36,7 +37,7 @@ var stage = {
   ctx: '',
   time: {delta: 0, passed: 0},
   w: 480,
-  h: 320,
+  h: 520,
   gutter: 20,
   mouse: new mouseFactory(),
   keysDown: {},
@@ -46,6 +47,12 @@ var stage = {
   pause: {
     isPaused: '',
     possible: '',
+  },
+  countBlocks: function() {
+    var blocks = this.getSceneryByType('block')
+    if (blocks.length < 1) {
+      // scenes.setupSceneLevel()
+    }
   },
   getSceneryByType: function(type) {
     var scenery = []
