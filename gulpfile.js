@@ -7,11 +7,12 @@ var domain = require('domain')
 var buffer = require('gulp-buffer')
 
 gulp.task('default', function() {
-  return buildJs()
+  gutil.log('watching...')
+  watch('ui/**/*.js', buildJs)
 })
 
-gulp.task('watch', function() {
-  watch('ui/**/*.js', buildJs)
+gulp.task('buildJs', function() {
+  return buildJs()
 })
 
 function buildJs() {
