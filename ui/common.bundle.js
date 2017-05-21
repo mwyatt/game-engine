@@ -6,7 +6,7 @@ var timeNow
 
 scenery.setupStage()
 scenery.setupEvents()
-scenery.setupSceneMenu()
+scenery.setupSceneLogo()
 loop()
 
 function loop() {

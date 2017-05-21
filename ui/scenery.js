@@ -74,6 +74,28 @@ function setupSceneMenu() {
   stage.scenery.push(fps)
 }
 
+function setupSceneLogo() {
+  var logo = {
+    aniIntro: {
+      progress: 0,
+      duration: 1000,
+    }
+    update: function(stage) {
+      this.animationIntro.progress += stage.time.delta
+      if (this.animationIntro.progress <= this.animationIntro.duration) {
+        var dec = this.animationIntro.progress / this.animationIntro.duration
+        var opacity = 1 - (Math.round(dec * 10) / 10)
+        this.animationIntro.opacity = opacity
+      }
+      if (this.opacity > 0.7) {
+        
+      }
+    }
+  }
+
+  stage.scenery.push(buttonGroup)
+}
+
 function setupSceneLevel() {
   clearScenery()
   setupEndCondition()
