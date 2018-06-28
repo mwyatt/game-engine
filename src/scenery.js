@@ -1,53 +1,58 @@
 var stage = require('./stage')
+var scenery = {}
+var buttonFactory = require('./temp/button')
+var buttonGroupFactory = require('./temp/buttonGroup')
 var fps = require('./fps')
-var hitTest = require('./hittest')
-var ballFactory = require('./ball')
-var buttonFactory = require('./button')
-var buttonGroupFactory = require('./buttonGroup')
-var blockFactory = require('./block')
-var paddleFactory = require('./paddle')
+// var hitTest = require('./hittest')
+// var ballFactory = require('./ball')
+// var blockFactory = require('./block')
+// var paddleFactory = require('./paddle')
 
-function clearScenery() {
-  stage.hitZones = []
-  stage.scenery = []
+scenery.renderStage = function() {
+  stage.canvasEl = document.createElement('canvas')
+  stage.canvasEl.style.cursor = 'none'
+  stage.canvasEl.width = stage.w
+  stage.canvasEl.height = stage.h
+  stage.canvasRect = stage.canvasEl.getBoundingClientRect()
+  document.body.appendChild(stage.canvasEl)
+  stage.ctx = stage.canvasEl.getContext('2d')
 }
 
-// some kind of transition element
-// fades in a colour
-// fades in some text while moving up\
-// sets up next scene with this scene over it
-// fades out
-
-function appendSceneLevelComplete() {
-
-  // retain level scene items
-
-  var transition = {
-    animationIntro: {
-      opacity: 0,
-      progress: 0,
-      duration: 1000,
-    },
-    update: function(stage) {
-      this.animationIntro.progress += stage.time.delta
-      if (this.animationIntro.progress <= this.animationIntro.duration) {
-        var dec = this.animationIntro.progress / this.animationIntro.duration
-        var opacity = 1 - (Math.round(dec * 10) / 10)
-        this.animationIntro.opacity = opacity
+scenery.setupEvents = function() {
+  window.addEventListener('keydown', function (event) {
+    var keyConfig
+    if (event.keyCode in stage.keysDown == false) {
+      keyConfig = {
+        code: event.keyCode,
+        time: {depressed: stage.time.passed}
       }
-      if (this.opacity > 0.7) {
-        
+      stage.keysDown[event.keyCode] = keyConfig
+
+      if (stage.keyCodes.esc == keyConfig.code && stage.pause.possible) {
+        stage.pause.isPaused = stage.pause.isPaused ? 0 : 1
       }
-    },
-    render: function(stage) {
-      stage.ctx.fillStyle = 'hsla(189, 79%, 53%, ' + this.animationIntro.opacity + ')'
-      stage.ctx.fillRect(0, 0, stage.w, stage.h)
-    },
-  }
-  stage.scenery.push(transition)
+    }
+    if (event.keyCode == stage.keyCodes.f2) {
+
+      // time to party?
+      stage.canvasEl.webkitRequestFullscreen()
+    }
+  }, false)
+
+  window.addEventListener('keyup', function (event) {
+    var leaveCode = event.keyCode
+    delete stage.keysDown[leaveCode]
+  }, false)
+
+  stage.canvasEl.addEventListener('mousemove', function(e) {
+    stage.mouse.x = e.clientX - stage.canvasRect.left
+    stage.mouse.y = e.clientY - stage.canvasRect.bottom
+    stage.mouse.storeVelocity()
+  }, false)
 }
 
-function setupSceneMenu() {
+
+scenery.setupMenu = function() {
   var buttonPlay = new buttonFactory()
   var buttonX = stage.w / 2 - buttonPlay.w / 2
   buttonPlay.x = buttonX
@@ -70,8 +75,8 @@ function setupSceneMenu() {
   buttonGroup.buttons.push(buttonPlay)
   // buttonGroup.buttons.push(buttonOptions)
 
-  stage.scenery.push(buttonGroup)
-  stage.scenery.push(fps)
+  stage.scenery.add(buttonGroup)
+  stage.scenery.add(fps)
 }
 
 function setupSceneLogo() {
@@ -79,7 +84,7 @@ function setupSceneLogo() {
     aniIntro: {
       progress: 0,
       duration: 1000,
-    }
+    },
     update: function(stage) {
       this.animationIntro.progress += stage.time.delta
       if (this.animationIntro.progress <= this.animationIntro.duration) {
@@ -93,18 +98,18 @@ function setupSceneLogo() {
     }
   }
 
-  stage.scenery.push(buttonGroup)
+  stage.scenery.add(buttonGroup)
 }
 
 function setupSceneLevel() {
-  clearScenery()
-  setupEndCondition()
-  setupPaddle()
-  setupBalls()
-  setupBlocks()
-  setupZones()
-  setupPauseOption()
-  stage.scenery.push(fps)
+  stage.empty()
+  scenery.setupEndCondition()
+  scenery.setupPaddle()
+  scenery.setupBalls()
+  scenery.setupBlocks()
+  scenery.setupZones()
+  scenery.setupPauseOption()
+  stage.scenery.add(fps)
   // score?
 }
 
@@ -117,7 +122,7 @@ function setupEndCondition() {
         livesLeft += balls[b].lives
       }
       if (livesLeft < 1) {
-        stage.scenery.push({
+        stage.scenery.add({
           update: function() {},
           render: function() {
             stage.ctx.fillStyle = 'hsla(100, 40%, 50%, 0.7)'
@@ -135,7 +140,7 @@ function setupEndCondition() {
     },
     render: function() {},
   }
-  stage.scenery.push(endCondition)
+  stage.scenery.add(endCondition)
 }
 
 function setupPauseOption() {
@@ -156,17 +161,7 @@ function setupPauseOption() {
       }
     },
   }
-  stage.scenery.push(pause)
-}
-
-function setupStage() {
-  stage.canvasEl = document.createElement('canvas')
-  stage.canvasEl.style.cursor = 'none'
-  stage.canvasEl.width = stage.w
-  stage.canvasEl.height = stage.h
-  stage.canvasRect = stage.canvasEl.getBoundingClientRect()
-  document.body.appendChild(stage.canvasEl)
-  stage.ctx = stage.canvasEl.getContext('2d')
+  stage.scenery.add(pause)
 }
 
 function setupZones() {
@@ -203,38 +198,6 @@ function setupZones() {
   }
 }
 
-function setupEvents() {
-  window.addEventListener('keydown', function (event) {
-    var keyConfig
-    if (event.keyCode in stage.keysDown == false) {
-      keyConfig = {
-        code: event.keyCode,
-        time: {depressed: stage.time.passed}
-      }
-      stage.keysDown[event.keyCode] = keyConfig
-
-      if (stage.keyCodes.esc == keyConfig.code && stage.pause.possible) {
-        stage.pause.isPaused = stage.pause.isPaused ? 0 : 1
-      }
-    }
-    if (event.keyCode == stage.keyCodes.f2) {
-
-      // time to party?
-      stage.canvasEl.webkitRequestFullscreen()
-    }
-  }, false)
-
-  window.addEventListener('keyup', function (event) {
-    var leaveCode = event.keyCode
-    delete stage.keysDown[leaveCode]
-  }, false)
-
-  stage.canvasEl.addEventListener('mousemove', function(e) {
-    stage.mouse.x = e.clientX - stage.canvasRect.left
-    stage.mouse.y = e.clientY - stage.canvasRect.bottom
-    stage.mouse.storeVelocity()
-  }, false)
-}
 
 function setupBalls() {
   var balls = [
@@ -251,7 +214,7 @@ function setupBalls() {
     ball.vX = .2
     ball.vY = .2
     ball.updateHitZone(stage.hitZones)
-    stage.scenery.push(ball)
+    stage.scenery.add(ball)
   }
 }
 
@@ -262,7 +225,7 @@ function setupPaddle() {
 
   paddle.x = (stage.w / 2) - (paddle.w / 2)
   paddle.y = vpos
-  stage.scenery.push(paddle)
+  stage.scenery.add(paddle)
 }
 
 function setupBlocks() {
@@ -293,22 +256,10 @@ function setupBlocks() {
 
       block.x = (col * block.w)
       block.y = (row * block.h)
-      stage.scenery.push(block)
+      stage.scenery.add(block)
     }
   }
   stage.countBlocks()
 }
 
-module.exports = {
-  clearScenery: clearScenery,
-  setupSceneMenu: setupSceneMenu,
-  setupSceneLevel: setupSceneLevel,
-  setupEndCondition: setupEndCondition,
-  setupPauseOption: setupPauseOption,
-  setupStage: setupStage,
-  setupZones: setupZones,
-  setupEvents: setupEvents,
-  setupBalls: setupBalls,
-  setupPaddle: setupPaddle,
-  setupBlocks: setupBlocks,
-}
+module.exports = scenery

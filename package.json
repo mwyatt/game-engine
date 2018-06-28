@@ -1,10 +1,6 @@
 {
   "devDependencies": {
-    "browserify": "^14.3.0",
-    "gulp": "^3.9.1",
-    "gulp-buffer": "0.0.2",
-    "gulp-tap": "^1.0.1",
-    "gulp-watch": "^4.3.11",
-    "gutil": "^1.6.4"
+    "webpack": "^4.12.2",
+    "webpack-cli": "^3.0.8"
   }
 }
