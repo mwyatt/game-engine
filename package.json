@@ -1,5 +1,6 @@
 {
   "devDependencies": {
+    "pixi.js": "^4.8.1",
     "webpack": "^4.12.2",
     "webpack-cli": "^3.0.8"
   }

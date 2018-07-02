@@ -16,7 +16,6 @@ var fps = {
     stage.ctx.font = "11px Verdana";
     stage.ctx.fillStyle = "hsl(189, 20%, 70%)";
     stage.ctx.fillText(this.fps, stage.w - 20, stage.h - 20);
-    console.log(stage.ctx)
   },
 }
 

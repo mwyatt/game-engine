@@ -36,9 +36,6 @@ var stage = {
     isPaused: '',
     possible: '',
   },
-  empty: function() {
-    stage.scenery = []
-  },
   loop: function() {
     timeNow = Date.now()
     stage.time.delta = timeNow - timeThen
@@ -49,21 +46,21 @@ var stage = {
     requestFrameId = window.requestAnimationFrame(stage.loop)
   },
   update: function() {
-    for (var s = 0; s < stage.scenery.length; s++) {
+    for (var s = 0; s < stage.scenery.items.length; s++) {
       stage.scenery.items[s].update(stage)
     }
   },
   render: function() {
     stage.ctx.clearRect(0, 0, stage.w, stage.h)
-    // stage.ctx.fillStyle = '#ffffff'
-    // stage.ctx.fillRect(0, 0, stage.w, stage.h)
+    stage.ctx.fillStyle = '#ffffff'
+    stage.ctx.fillRect(0, 0, stage.w, stage.h)
 
     if (!oneTime) {
-      console.log(stage.scenery.items)
+      // console.log(stage.scenery.items)
       oneTime = 1
     }
 
-    for (var s = 0; s < stage.scenery.length; s++) {
+    for (var s = 0; s < stage.scenery.items.length; s++) {
       stage.scenery.items[s].render(stage)
     }
   },
